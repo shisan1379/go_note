@@ -1,0 +1,39 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+//option 关键字用来对.proto 文件进行一些设置，
+//其中go_package 是必需的设置，而且 go_package 的值必须是包导入的路径。package 关键字指定生成的.pb.go 文件所在的包名。
+//.代表在当前目录生成
+//service 生成的go 文件的包名是 service
+option go_package = ".;service";
+
+package helloworld;
+
+// 我们通过 service 关键字定义服务
+service Greeter {
+  //发送问候
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  //这里不是赋值是定义变量在message中的位置
+  string name = 1;
+}
+
+// 包含用户名的请求消息。
+message HelloReply {
+  string message = 1;
+}
