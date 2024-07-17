@@ -53,9 +53,12 @@ Go 语言学习笔记
 - [go进阶](2.go/3.go进阶.md)
 - [go原理](2.go/4.go原理.md)
 
-# go开发规范
+# go开发规范&项目实战
 - [开发规范](2.1.go开发规范/1.开发规范.md)
 - [Go常用设计模式](2.1.go开发规范/2.Go常用设计模式.md)
+- [gRPC-todo](2.1.go开发规范/3.gRPC.md)
+- [makefile-todo](2.1.go开发规范/4.makefile.md)
+- [makefile-todo](2.1.go开发规范/4.makefile.md)
 
 
 
