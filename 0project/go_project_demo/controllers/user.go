@@ -70,3 +70,9 @@ func (u *User) DeleteUser(c *gin.Context) {
 	dao.Db.Delete(&models.User{}, id)
 	ReturnSuccess(c, 0, "success", nil, 10)
 }
+func (u *User) FindUser(c *gin.Context) {
+	name := c.Param("name")
+	var users []models.User
+	dao.Db.Where("name = ?", name).Find(&users)
+	ReturnSuccess(c, 0, "success", users, 10)
+}

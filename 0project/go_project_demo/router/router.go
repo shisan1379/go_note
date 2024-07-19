@@ -24,6 +24,8 @@ func Router() *gin.Engine {
 		userRouter.GET("/info/:id", user.GetUserInfo)
 		userRouter.GET("/add/:name", user.AddUser)
 		userRouter.GET("/update/:id/:name", user.UpdateUser)
+		userRouter.GET("/delete/:id", user.DeleteUser)
+		userRouter.GET("/find/:name", user.FindUser)
 		userRouter.GET("/info2", user.GetUserInfo2)
 		userRouter.POST("/list", func(ctx *gin.Context) {
 			ctx.String(http.StatusOK, "user list")
