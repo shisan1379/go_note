@@ -5,6 +5,9 @@ import (
 	logger "gin_gorm_redis_demo/pkg/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	glog "gorm.io/gorm/logger"
+	"log"
+	"os"
 	"time"
 )
 
@@ -14,8 +17,19 @@ var (
 )
 
 func init() {
-
-	gConfig := gorm.Config{}
+	newLogger := glog.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		glog.Config{
+			SlowThreshold:             time.Second, // 慢速 SQL 阈值
+			LogLevel:                  glog.Info,   // 日志级别
+			IgnoreRecordNotFoundError: true,        // 忽略记录器的 ErrRecordNotFound 错误
+			ParameterizedQueries:      false,       // 不要在 SQL 日志中包含参数
+			Colorful:                  false,       // 禁用颜色
+		},
+	)
+	gConfig := gorm.Config{
+		Logger: newLogger,
+	}
 
 	Db, err = gorm.Open(mysql.Open(config.Mysqldb), &gConfig)
 	if err != nil {

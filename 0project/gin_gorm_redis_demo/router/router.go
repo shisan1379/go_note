@@ -32,5 +32,7 @@ func Router() *gin.Engine {
 	{
 		playerGroup.POST("/getPlayers", controllers.PlayerController{}.GetPlayers)
 	}
+	r.POST("/ranking", controllers.PlayerController{}.GetRanking)
+
 	return r
 }

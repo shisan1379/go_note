@@ -12,7 +12,7 @@ import (
 
 func TestClient(t *testing.T) {
 
-	file, _ := credentials.NewClientTLSFromFile("E:\\GIT\\go_note\\0project\\t5\\key\\test.pem", "*.tgo.com")
+	file, _ := credentials.NewClientTLSFromFile("D:\\Git\\go_note\\0project\\t5\\key\\test.pem", "*.tgo.com")
 
 	//连接到 server端，此处禁用安全传输(没有加密和验证)
 	//client, err := grpc.NewClient("127.0.0.1:9090",

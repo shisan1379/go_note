@@ -51,11 +51,11 @@ func (u UserController) Login(c *gin.Context) {
 	}
 
 	user, _ := model.GetUserInfoByUserName(username)
-	if user.Id == 0 || user.Pwd != EncryMd5(password) {
+	if user.Id == 0 || user.Password != EncryMd5(password) {
 		ReturnError(c, 4001, "用户名或密码不正确")
 		return
 	}
-	data := UserApi{Id: user.Id, Name: user.Name}
+	data := UserApi{Id: user.Id, Name: user.Username}
 	session := sessions.Default(c)
 	session.Set("login:"+strconv.Itoa(user.Id), user.Id)
 	session.Save()

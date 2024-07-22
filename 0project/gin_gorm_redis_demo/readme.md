@@ -22,3 +22,8 @@
    ```bash
    go get -u github.com/gin-contrib/sessions
    ```
+
+1. 导入 `redis`
+   ```bash
+   go get -u github.com/redis/go-redis/v9
+   ```

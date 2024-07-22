@@ -3,9 +3,9 @@ package model
 import "gin_gorm_redis_demo/dao"
 
 type User struct {
-	Id   int `gorm:"primary_key;AUTO_INCREMENT"`
-	Name string
-	Pwd  string
+	Id       int `gorm:"primary_key;AUTO_INCREMENT"`
+	Username string
+	Password string
 }
 
 func (User) TableName() string {
@@ -19,8 +19,8 @@ func GetUserInfoByUserName(userName string) (User, error) {
 }
 
 func AddUser(name string, pwd string) (user User, err error) {
-	user.Name = name
-	user.Pwd = pwd
+	user.Username = name
+	user.Password = pwd
 	err = dao.Db.Create(&user).Error
 	return
 }

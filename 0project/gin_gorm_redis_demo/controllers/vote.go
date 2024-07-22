@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	cache "gin_gorm_redis_demo/catch"
 	"gin_gorm_redis_demo/model"
 	"github.com/gin-gonic/gin"
 	"strconv"

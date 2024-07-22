@@ -21,8 +21,8 @@ func (c *server) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloR
 }
 func TestServer(t *testing.T) {
 
-	file, _ := credentials.NewServerTLSFromFile("E:\\GIT\\go_note\\0project\\t5\\key\\test.pem",
-		"E:\\GIT\\go_note\\0project\\t5\\key\\test.key")
+	file, _ := credentials.NewServerTLSFromFile("D:\\Git\\go_note\\0project\\t5\\key\\test.pem",
+		"D:\\Git\\go_note\\0project\\t5\\key\\test.key")
 	//开启端口
 	listen, _ := net.Listen("tcp", ":9090")
 	//创建GRPC服务
