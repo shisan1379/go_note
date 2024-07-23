@@ -8,8 +8,9 @@ import (
 type HandleFunc func(w http.ResponseWriter, r *http.Request)
 
 type routerGroup struct {
-	name          string
-	handleFuncMap map[string]HandleFunc
+	name            string
+	handleFuncMap   map[string]HandleFunc
+	handleMethodMap map[string][]string
 }
 
 // func (g routerGroup) name()  {
@@ -30,6 +31,10 @@ func (receiver *router) Group(name string) *routerGroup {
 
 func (r routerGroup) AddRouter(name string, handleFunc HandleFunc) {
 	r.handleFuncMap[name] = handleFunc
+}
+func (r routerGroup) Any(name string, handleFunc HandleFunc) {
+	r.handleFuncMap[name] = handleFunc
+	r.handleMethodMap["ANY"] = append(r.handleMethodMap["ANY"], name)
 }
 
 // Engine  引擎
