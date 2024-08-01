@@ -7,7 +7,8 @@ import (
 )
 
 type User struct {
-	Name string
+	Name string `xml:"name"`
+	Age  int    `xml:"age"`
 }
 
 func Log(next msgo.HandleFunc) msgo.HandleFunc {
@@ -64,15 +65,52 @@ func main() {
 		ctx.HTML(http.StatusOK, "<h1>啦啦啦啦</h1>")
 	})
 
-	group.Get("/template", func(ctx *msgo.Context) {
-		ctx.HTMLTemplate("index", "", "tpl/index.html")
-	})
+	//group.Get("/template", func(ctx *msgo.Context) {
+	//	ctx.HTMLTemplate("index", "", "tpl/index.html")
+	//})
+	//group.Get("/login", func(ctx *msgo.Context) {
+	//	ctx.HTMLTemplate("login", &User{Name: "123"}, "tpl/login.html", "tpl/header.html")
+	//})
+	//group.Get("/login2", func(ctx *msgo.Context) {
+	//	ctx.HTMLTemplateGlob2("login.html", &User{Name: "123123123"}, "tpl/*.html")
+	//})
+	//group.Get("/test", func(ctx *msgo.Context) {
+	//	ctx.HTMLTemplateGlob2("test.html", nil, "tpl/*.html")
+	//})
+	engine.LoadTemplate("tpl/*.html")
 	group.Get("/login", func(ctx *msgo.Context) {
-		ctx.HTMLTemplate("login", &User{Name: "123"}, "tpl/login.html", "tpl/header.html")
+		ctx.Template("login.html", &User{Name: "123123123"})
 	})
-	group.Get("/login2", func(ctx *msgo.Context) {
-		ctx.HTMLTemplateGlob2("login.html", &User{Name: "123123123"}, "tpl/*.html")
+	group.Get("/json", func(ctx *msgo.Context) {
+		ctx.Json(http.StatusOK, &User{Name: "123123123"})
 	})
-
+	group.Get("/xml", func(ctx *msgo.Context) {
+		ctx.Xml(http.StatusOK, &User{Name: "123123123", Age: 10})
+	})
+	group.Get("/file", func(ctx *msgo.Context) {
+		ctx.File("./tpl/bb.xlsx")
+	})
+	group.Get("/fileName", func(ctx *msgo.Context) {
+		ctx.FileAttachment("./tpl/bb.xlsx", "aaa.xlsx")
+	})
+	group.Get("/fs", func(ctx *msgo.Context) {
+		ctx.FileFromFS("bb.xlsx", http.Dir("tpl"))
+	})
+	group.Get("/redirect", func(ctx *msgo.Context) {
+		ctx.Redirect(http.StatusFound, "user/login")
+	})
+	group.Get("/string", func(ctx *msgo.Context) {
+		ctx.String(http.StatusOK, "string")
+	})
+	group.Get("/add", func(ctx *msgo.Context) {
+		ids := ctx.GetQuery("id")
+		fmt.Println(ids)
+		ctx.String(http.StatusOK, "string")
+	})
+	group.Get("/add2", func(ctx *msgo.Context) {
+		ids, _ := ctx.GetQueryArray("ids")
+		fmt.Println(ids)
+		ctx.String(http.StatusOK, "string")
+	})
 	engine.Run()
 }

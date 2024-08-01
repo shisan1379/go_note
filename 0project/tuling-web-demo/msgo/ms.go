@@ -2,8 +2,11 @@ package msgo
 
 import (
 	"fmt"
+	"github.com/shisan1379/msgo/render"
+	"html/template"
 	"log"
 	"net/http"
+	"sync"
 )
 
 const ANY = "ANY"
@@ -124,36 +127,62 @@ func (r routerGroup) Head(name string, handleFunc HandleFunc, ware ...MiddleWare
 // Engine  引擎
 type Engine struct {
 	router
+	funcMap    template.FuncMap
+	HTMLRender render.HTMLRender
+	pool       sync.Pool
+}
+
+func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
+	e.funcMap = funcMap
+}
+func (e *Engine) LoadTemplate(pattern string) {
+	tmpl := template.Must(
+		template.New("").
+			Funcs(e.funcMap).
+			ParseGlob(pattern))
+	e.SetTemplate(tmpl)
+}
+
+func (e *Engine) SetTemplate(t *template.Template) {
+	e.HTMLRender = render.HTMLRender{Template: t}
 }
 
 // ServeHTTP 实现处理方法
 func (e *Engine) ServeHTTP(write http.ResponseWriter, request *http.Request) {
-	e.httpRequestHandle(write, request)
+	context := e.pool.Get().(*Context)
+	context.Response = write
+	context.Request = request
+
+	e.httpRequestHandle(context, write, request)
+
+	e.pool.Put(context)
 }
 
 // httpRequestHandle http请求处理器
-func (e *Engine) httpRequestHandle(write http.ResponseWriter, request *http.Request) {
+func (e *Engine) httpRequestHandle(context *Context, write http.ResponseWriter, request *http.Request) {
 	method := request.Method
 	for _, group := range e.routerGroups {
 
-		routerName := SubStringLast(request.RequestURI, "/"+group.name)
+		routerName := SubStringLast(request.URL.Path, "/"+group.name)
 
 		node := group.routerTree.Get(routerName)
 		if node != nil && node.isEnd {
 
 			//路由匹配上了
-			ctx := &Context{
-				Response: write,
-				Request:  request,
-			}
+			//ctx := &Context{
+			//	Response: write,
+			//	Request:  request,
+			//	engine:   e,
+			//}
+
 			handle, ok := group.handleFuncMap[node.routerName][ANY]
 			if ok {
-				group.MethodHandle(node.routerName, ANY, handle, ctx)
+				group.MethodHandle(node.routerName, ANY, handle, context)
 				return
 			}
 			handle, ok = group.handleFuncMap[node.routerName][method]
 			if ok {
-				group.MethodHandle(node.routerName, method, handle, ctx)
+				group.MethodHandle(node.routerName, method, handle, context)
 				return
 			}
 		}
@@ -165,11 +194,20 @@ func (e *Engine) httpRequestHandle(write http.ResponseWriter, request *http.Requ
 }
 
 func New() *Engine {
-	return &Engine{
+	engine := &Engine{
 		router: router{
 			routerGroups: []*routerGroup{},
 		},
 	}
+	engine.pool.New = func() any {
+		return engine.allocateContext()
+	}
+	return engine
+
+}
+
+func (e *Engine) allocateContext() any {
+	return &Context{engine: e}
 }
 
 func (e *Engine) Run() {
