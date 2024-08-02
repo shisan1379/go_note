@@ -18,7 +18,7 @@ func newTreeNode() *treeNode {
 	}
 }
 
-// put path: /user/get/:id
+// put path: /user/getMap/:id
 func (t *treeNode) Put(path string) {
 	//记录 根节点 指针
 	root := t
@@ -58,7 +58,7 @@ func (t *treeNode) Put(path string) {
 	t = root
 }
 
-// get path: /user/get/1
+// getMap path: /user/getMap/1
 func (t *treeNode) Get(path string) *treeNode {
 	strs := strings.Split(path, "/")
 	routerName := ""
@@ -88,7 +88,7 @@ func (t *treeNode) Get(path string) *treeNode {
 		if !isMatch {
 			for _, node := range children {
 				// /user/**
-				// /user/get/userInfo
+				// /user/getMap/userInfo
 				// /user/aa/bb
 				if node.name == "**" {
 					routerName += "/" + node.name

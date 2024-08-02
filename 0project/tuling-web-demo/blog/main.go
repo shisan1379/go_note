@@ -3,12 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/shisan1379/msgo"
+	"io"
+	"log"
 	"net/http"
+	"os"
 )
 
 type User struct {
-	Name string `xml:"name"`
-	Age  int    `xml:"age"`
+	Name      string   `xml:"name" json:"name" msgo:"required"`
+	Age       int      `xml:"name" json:"age"`
+	Addresses []string `json:"addresses"`
 }
 
 func Log(next msgo.HandleFunc) msgo.HandleFunc {
@@ -112,5 +116,51 @@ func main() {
 		fmt.Println(ids)
 		ctx.String(http.StatusOK, "string")
 	})
+	group.Get("/add3", func(ctx *msgo.Context) {
+		name := ctx.GetDefaultQuery("name", "张三")
+		fmt.Println(name)
+		ctx.String(http.StatusOK, name)
+	})
+	group.Get("/map", func(ctx *msgo.Context) {
+		name, _ := ctx.GetQueryMap("user")
+		fmt.Println(name)
+
+		ctx.Json(http.StatusOK, name)
+	})
+	group.Post("/form", func(ctx *msgo.Context) {
+		name, _ := ctx.GetPostForm("name")
+		ctx.Json(http.StatusOK, name)
+	})
+
+	group.Post("/upFile", func(ctx *msgo.Context) {
+		file, err := ctx.FormFile("file")
+		if err != nil {
+			log.Println(err)
+		}
+		src, err := file.Open()
+		defer src.Close()
+		if err != nil {
+			log.Println(err)
+		} else {
+			out, err := os.Create("d:/aa/" + file.Filename)
+			defer out.Close()
+			if err != nil {
+				log.Println(err)
+			} else {
+				io.Copy(out, src)
+			}
+		}
+	})
+
+	group.Post("/jsonParam", func(ctx *msgo.Context) {
+		user := &User{}
+		err := ctx.DealJson(user)
+		if err == nil {
+			ctx.Json(http.StatusOK, user)
+		} else {
+			log.Println(err)
+		}
+	})
+
 	engine.Run()
 }
