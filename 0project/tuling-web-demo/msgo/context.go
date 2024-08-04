@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	validator "github.com/shisan1379/msgo/Validator"
 	"github.com/shisan1379/msgo/render"
 	"html/template"
 	"io"
@@ -25,10 +26,28 @@ type Context struct {
 	engine                *Engine
 	queryCache            url.Values
 	formCache             url.Values
-	DisallowUnknownFields bool
-	IsValidate            bool //是否开启参数校验
+	DisallowUnknownFields bool // 参数中必须含有结构体的值
+	IsValidate            bool // 是否开启参数校验（按照规则校验参数）
 }
 
+func checkParam(value reflect.Value, data any, decoder *json.Decoder) error {
+	mapData := make(map[string]interface{})
+	_ = decoder.Decode(&mapData)
+	for i := 0; i < value.NumField(); i++ {
+		field := value.Type().Field(i)
+		required := field.Tag.Get("msgo")
+		tag := field.Tag.Get("json")
+		value := mapData[tag]
+		if value == nil && required == "required" {
+			return errors.New(fmt.Sprintf("filed [%s] is required", tag))
+		}
+	}
+	if data != nil {
+		marshal, _ := json.Marshal(mapData)
+		_ = json.Unmarshal(marshal, data)
+	}
+	return nil
+}
 func (c *Context) DealJson(data any) error {
 	body := c.Request.Body
 	if c.Request == nil || body == nil {
@@ -43,17 +62,25 @@ func (c *Context) DealJson(data any) error {
 		decoder.DisallowUnknownFields()
 	}
 	if c.IsValidate {
-		err := validateparam(data, decoder)
+		err := validateParam(data, decoder)
 		if err != nil {
 			return err
 		}
 	} else {
-		return decoder.Decode(data)
+		err := decoder.Decode(data)
+		if err != nil {
+			return err
+		}
+		return validate(data)
 	}
 	return nil
 }
 
-func validateparam(data any, decoder *json.Decoder) error {
+func validate(obj any) error {
+	return validator.Validator.ValidateStruct(obj)
+}
+
+func validateParam(data any, decoder *json.Decoder) error {
 	//解析为map，并根据map 中的key 做对比
 	//判断类型为 结构体  才能解析为 map
 
@@ -68,12 +95,57 @@ func validateparam(data any, decoder *json.Decoder) error {
 	of := reflect.ValueOf(elem)
 	switch of.Kind() {
 	case reflect.Struct:
+		//将 json 解析为 map
 		mapVal := map[string]interface{}{}
 		decoder.Decode(&mapVal)
-		
-	}
-}
+		for i := 0; i < of.NumField(); i++ {
+			field := of.Type().Field(i)
+			tag := field.Tag.Get("json")
+			value := mapVal[tag]
+			if value == nil {
+				return errors.New(fmt.Sprintf("filed [%s] is not exist", tag))
+			}
+		}
+		//对 map 进行序列化
+		marshal, _ := json.Marshal(mapVal)
+		// 对 map 进行反序列化，赋值给 data
+		_ = json.Unmarshal(marshal, data)
 
+	case reflect.Slice, reflect.Array:
+		elem := of.Type().Elem()
+		elemType := elem.Kind()
+		if elemType == reflect.Struct {
+			return checkParamSlice(elem, data, decoder)
+		}
+	default:
+		err := decoder.Decode(data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func checkParamSlice(elem reflect.Type, data any, decoder *json.Decoder) error {
+	mapData := make([]map[string]interface{}, 0)
+	_ = decoder.Decode(&mapData)
+	if len(mapData) <= 0 {
+		return nil
+	}
+	for i := 0; i < elem.NumField(); i++ {
+		field := elem.Field(i)
+		required := field.Tag.Get("msgo")
+		tag := field.Tag.Get("json")
+		value := mapData[0][tag]
+		if value == nil && required == "required" {
+			return errors.New(fmt.Sprintf("filed [%s] is required", tag))
+		}
+	}
+	if data != nil {
+		marshal, _ := json.Marshal(mapData)
+		_ = json.Unmarshal(marshal, data)
+	}
+	return nil
+}
 func (c *Context) MultipartForm() (*multipart.Form, error) {
 	err := c.Request.ParseMultipartForm(defaultMaxMemory)
 	return c.Request.MultipartForm, err

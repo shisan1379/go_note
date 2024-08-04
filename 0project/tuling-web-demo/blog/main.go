@@ -11,7 +11,7 @@ import (
 
 type User struct {
 	Name      string   `xml:"name" json:"name" msgo:"required"`
-	Age       int      `xml:"name" json:"age"`
+	Age       int      `xml:"name" json:"age" validate:"required,max=50,min=18"`
 	Addresses []string `json:"addresses"`
 }
 
@@ -155,6 +155,16 @@ func main() {
 	group.Post("/jsonParam", func(ctx *msgo.Context) {
 		user := &User{}
 		err := ctx.DealJson(user)
+		if err == nil {
+			ctx.Json(http.StatusOK, user)
+		} else {
+			log.Println(err)
+		}
+	})
+
+	group.Post("/jsonArray", func(ctx *msgo.Context) {
+		user := make([]User, 10)
+		err := ctx.DealJson(&user)
 		if err == nil {
 			ctx.Json(http.StatusOK, user)
 		} else {
