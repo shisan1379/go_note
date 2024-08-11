@@ -22,8 +22,10 @@ type defaultValidator struct {
 	validate *validator.Validate
 }
 
+// 使用 SliceValidationError 作为 error切片的别名
 type SliceValidationError []error
 
+// SliceValidationError 实现 error 接口
 func (err SliceValidationError) Error() string {
 	n := len(err)
 	switch n {
@@ -52,10 +54,15 @@ func (d *defaultValidator) ValidateStruct(obj any) error {
 	}
 	value := reflect.ValueOf(obj)
 	switch value.Kind() {
+	// 如果是指针则取出值
+	//使用validator 验证 结构体
 	case reflect.Ptr:
 		return d.ValidateStruct(value.Elem().Interface())
+
+		// 使用validator 验证 结构体
 	case reflect.Struct:
 		return d.validateStruct(obj)
+		//如果是切片或数组，则遍历验证 元素
 	case reflect.Slice, reflect.Array:
 		count := value.Len()
 		validateRet := make(SliceValidationError, 0)
@@ -78,6 +85,7 @@ func (d *defaultValidator) validateStruct(obj any) error {
 	return d.validate.Struct(obj)
 }
 
+// 使用 sync.once 实现解析器的单例加载
 func (d *defaultValidator) lazyInit() {
 	d.one.Do(func() {
 		d.validate = validator.New()

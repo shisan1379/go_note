@@ -11,17 +11,16 @@ import (
 
 const ANY = "ANY"
 
-type HandleFunc func(ctx *Context)
+type HandlerFunc func(ctx *Context)
 
-type MiddleWare func(next HandleFunc) HandleFunc
+type MiddleWare func(next HandlerFunc) HandlerFunc
 
 type routerGroup struct {
 	name              string
-	handleFuncMap     map[string]map[string]HandleFunc   //<path,<method, HandleFunc>>
+	handleFuncMap     map[string]map[string]HandlerFunc  //<path,<method, HandlerFunc>>
 	middleWareFuncMap map[string]map[string][]MiddleWare //<path,<method, []MiddleWare>>
 	routerTree        *treeNode
 	preMiddleWare     []MiddleWare
-	postMiddleWare    []MiddleWare
 }
 
 // Use 添加中间件
@@ -29,13 +28,8 @@ func (r *routerGroup) Use(middleWareFunc ...MiddleWare) {
 	r.preMiddleWare = append(r.preMiddleWare, middleWareFunc...)
 }
 
-// PostHandle 添加后置中间件
-//func (r *routerGroup) PostHandle(middleWareFunc ...MiddleWare) {
-//	r.postMiddleWare = append(r.postMiddleWare, middleWareFunc...)
-//}
-
 // MethodHandle 执行方法处理，包含执行中间件
-func (r *routerGroup) MethodHandle(routerPath string, method string, handleFunc HandleFunc, ctx *Context) {
+func (r *routerGroup) MethodHandle(routerPath string, method string, handleFunc HandlerFunc, ctx *Context) {
 	// 路由级别的中间件
 	middleWareFuncs, ok := r.middleWareFuncMap[routerPath][method]
 	if ok {
@@ -63,7 +57,7 @@ func (receiver *router) Group(name string) *routerGroup {
 	// 这里没有检查组是否重复
 	group := routerGroup{
 		name:              name,
-		handleFuncMap:     make(map[string]map[string]HandleFunc),
+		handleFuncMap:     make(map[string]map[string]HandlerFunc),
 		middleWareFuncMap: make(map[string]map[string][]MiddleWare),
 		routerTree: &treeNode{
 			name:     "/",
@@ -75,11 +69,11 @@ func (receiver *router) Group(name string) *routerGroup {
 }
 
 // addRouter 添加路由
-func (r routerGroup) addRouter(method string, path string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) addRouter(method string, path string, handleFunc HandlerFunc, ware ...MiddleWare) {
 
 	m, _ := r.handleFuncMap[path]
 	if m == nil {
-		r.handleFuncMap[path] = make(map[string]HandleFunc)
+		r.handleFuncMap[path] = make(map[string]HandlerFunc)
 		r.middleWareFuncMap[path] = make(map[string][]MiddleWare)
 	}
 	_, ok := r.handleFuncMap[path][method]
@@ -95,32 +89,32 @@ func (r routerGroup) addRouter(method string, path string, handleFunc HandleFunc
 
 }
 
-func (r routerGroup) Any(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Any(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(ANY, name, handleFunc, ware...)
 }
 
-func (r routerGroup) Get(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Get(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodGet, name, handleFunc, ware...)
 }
-func (r routerGroup) Post(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Post(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodPost, name, handleFunc, ware...)
 }
-func (r routerGroup) Delete(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Delete(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodDelete, name, handleFunc, ware...)
 }
-func (r routerGroup) Put(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Put(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodPut, name, handleFunc, ware...)
 }
 
-func (r routerGroup) Patch(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Patch(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodPatch, name, handleFunc, ware...)
 }
 
-func (r routerGroup) Options(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Options(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodOptions, name, handleFunc, ware...)
 }
 
-func (r routerGroup) Head(name string, handleFunc HandleFunc, ware ...MiddleWare) {
+func (r routerGroup) Head(name string, handleFunc HandlerFunc, ware ...MiddleWare) {
 	r.addRouter(http.MethodHead, name, handleFunc, ware...)
 }
 
@@ -213,7 +207,7 @@ func (e *Engine) allocateContext() any {
 func (e *Engine) Run() {
 	//for _, g := range e.routerGroups {
 	//	for key, val := range g.handleFuncMap {
-	//		http.HandleFunc("/"+g.name+key, val)
+	//		http.HandlerFunc("/"+g.name+key, val)
 	//	}
 	//}
 	http.Handle("/", e)

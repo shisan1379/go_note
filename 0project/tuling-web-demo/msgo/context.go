@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	validator "github.com/shisan1379/msgo/Validator"
+	"github.com/shisan1379/msgo/binding"
 	"github.com/shisan1379/msgo/render"
 	"html/template"
 	"io"
@@ -28,6 +29,7 @@ type Context struct {
 	formCache             url.Values
 	DisallowUnknownFields bool // 参数中必须含有结构体的值
 	IsValidate            bool // 是否开启参数校验（按照规则校验参数）
+	StatusCode            int
 }
 
 func checkParam(value reflect.Value, data any, decoder *json.Decoder) error {
@@ -49,31 +51,10 @@ func checkParam(value reflect.Value, data any, decoder *json.Decoder) error {
 	return nil
 }
 func (c *Context) DealJson(data any) error {
-	body := c.Request.Body
-	if c.Request == nil || body == nil {
-		return errors.New("invalid request")
-	}
-
-	decoder := json.NewDecoder(body)
-
-	//json 参数中 存在，但是结构体中不存在
-	//如果想要实现json参数中有的属性，但是对应的结构体没有，报错，也就是检查结构体是否有效
-	if c.DisallowUnknownFields {
-		decoder.DisallowUnknownFields()
-	}
-	if c.IsValidate {
-		err := validateParam(data, decoder)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := decoder.Decode(data)
-		if err != nil {
-			return err
-		}
-		return validate(data)
-	}
-	return nil
+	jsonBinding := binding.JSON
+	jsonBinding.DisallowUnknownFields = c.DisallowUnknownFields
+	jsonBinding.IsValidate = c.IsValidate
+	return c.MustBindWith(data, jsonBinding)
 }
 
 func validate(obj any) error {
@@ -342,6 +323,10 @@ func (c *Context) Xml(status int, data any) error {
 	return c.Render(status, render.XML{Data: data})
 
 }
+func (c *Context) BindXML(obj any) error {
+	return c.MustBindWith(obj, binding.XML)
+}
+
 func (c *Context) File(name string) {
 	http.ServeFile(c.Response, c.Request, name)
 }
@@ -387,8 +372,21 @@ func (c *Context) String(status int, format string, values ...any) error {
 
 func (c *Context) Render(code int, r render.Render) error {
 	c.Response.WriteHeader(code)
+	c.StatusCode = code
 	err := r.Render(c.Response)
 	return err
+}
+
+func (c *Context) MustBindWith(data any, b binding.Binding) error {
+	//如果发生错误，返回400状态码 参数错误
+	if err := c.ShouldBindWith(data, b); err != nil {
+		c.Response.WriteHeader(http.StatusBadRequest)
+		return err
+	}
+	return nil
+}
+func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
+	return b.Bind(c.Request, obj)
 }
 
 // 是否 ASCII 字符
