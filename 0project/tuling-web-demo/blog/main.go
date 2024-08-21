@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/shisan1379/msgo"
+	msLog "github.com/shisan1379/msgo/log"
 	"io"
 	"log"
 	"net/http"
@@ -15,7 +16,7 @@ type User struct {
 	Addresses []string `json:"addresses"`
 }
 
-func Log(next msgo.HandleFunc) msgo.HandleFunc {
+func Log(next msgo.HandlerFunc) msgo.HandlerFunc {
 	return func(ctx *msgo.Context) {
 		fmt.Println("pre log")
 		next(ctx)
@@ -26,9 +27,9 @@ func main() {
 
 	engine := msgo.New()
 	group := engine.Group("user")
-
+	logger := msLog.Default()
 	//前置中间件
-	group.Use(func(next msgo.HandleFunc) msgo.HandleFunc {
+	group.Use(func(next msgo.HandlerFunc) msgo.HandlerFunc {
 		return func(ctx *msgo.Context) {
 			fmt.Println("pre handler")
 			next(ctx)
@@ -36,7 +37,9 @@ func main() {
 		}
 	})
 
-	//group.PostHandle(func(next msgo.HandleFunc) msgo.HandleFunc {
+	group.Use(msgo.Logging)
+
+	//group.PostHandle(func(next msgo.HandlerFunc) msgo.HandlerFunc {
 	//	return func(ctx *msgo.Context) {
 	//		fmt.Println("post handler")
 	//	}
@@ -153,6 +156,15 @@ func main() {
 	})
 
 	group.Post("/jsonParam", func(ctx *msgo.Context) {
+
+		logger.WithFields(msLog.Fields{
+			"name": "231",
+		}).Debug("debug fields")
+
+		logger.Debug("我是debug日志")
+		logger.Info("我是info日志")
+		logger.Error("我是error日志")
+
 		user := &User{}
 		err := ctx.DealJson(user)
 		if err == nil {
