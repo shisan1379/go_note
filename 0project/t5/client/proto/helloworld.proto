@@ -11,29 +11,50 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+// 定义了 proto 的版本 ，目前最新版本为 3
 syntax = "proto3";
+
 //option 关键字用来对.proto 文件进行一些设置，
+
 //其中go_package 是必需的设置，而且 go_package 的值必须是包导入的路径。package 关键字指定生成的.pb.go 文件所在的包名。
-//.代表在当前目录生成
-//service 生成的go 文件的包名是 service
+//"."表示生成的Go文件将与.proto文件位于同一目录下（或模块中）
+//"service"则是包名。这意呀着所有生成的Go文件都将属于service包。
 option go_package = ".;service";
 
+//如果客户端不需要java则无需编写
+
+////指定了Java代码中使用的包名。在这个例子中，生成的Java类将被放在io.grpc.examples.helloworld包中
+//option java_package = "io.grpc.examples.helloworld";
+////当使用protoc（Protocol Buffers编译器）为Java生成代码时，如果.proto文件中定义了多个消息或服务，它们通常会被放在一个外部类中。
+//// 这个选项允许你为这个外部类指定一个自定义的名称，而不是默认的基于文件名生成的名称
+//option java_outer_classname = "HelloWorldProto";
+////这个选项控制是否应该为每个定义（如消息、枚举、服务等）在Java中生成单独的文件。当设置为true时，每个定义都将被放置在其自己的.java文件中，而不是全部放在一个文件中。这有助于减少单个文件的大小，提高代码的可读性和可维护性
+//option java_multiple_files = true;
+
+//定义 Protobuf 文件的包名
 package helloworld;
 
-// 我们通过 service 关键字定义服务
+// 服务定义：通过 service 关键字定义服务
 service Greeter {
-  //发送问候
+  // 请求参数和返回值都必须是一个消息，不能为空，也不能是多个消息
+  // 如果不需要消息，那么也需要定义一个输入和输出消息
+  // 发送问候
   rpc SayHello (HelloRequest) returns (HelloReply) {}
+  // stream：代表支持流式通信
+  //         如果 stream 出现在输入参数前，那么代表客户端支持流式通信
+  //         如果 stream 出现在输出参数前，那么代表服务端支持流式通信
+  rpc SayHelloStream (stream HelloRequest) returns (stream HelloReply) {}
 }
 
-// The request message containing the user's name.
+// 消息体：通过 message 关键字定义
+//        此处为请求
 message HelloRequest {
-  //这里不是赋值是定义变量在message中的位置
+  //消息字段，及字段在消息中的位置
   string name = 1;
 }
 
-// 包含用户名的请求消息。
+// 消息体：通过 message 关键字定义
+//        此处为响应
 message HelloReply {
   string message = 1;
 }
