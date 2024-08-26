@@ -5,7 +5,7 @@ import "net/http"
 // 所有 http 返回数据 都实现此接口
 type Render interface {
 	// 发送数据数据
-	Render(w http.ResponseWriter) error
+	Render(w http.ResponseWriter, code int) error
 	// 设置响应头 - 也就是数据类型
 	WriteContentType(w http.ResponseWriter)
 }

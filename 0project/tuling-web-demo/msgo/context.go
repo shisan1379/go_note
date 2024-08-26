@@ -373,9 +373,10 @@ func (c *Context) String(status int, format string, values ...any) error {
 }
 
 func (c *Context) Render(code int, r render.Render) error {
-	c.Response.WriteHeader(code)
-	c.StatusCode = code
-	err := r.Render(c.Response)
+	//如果设置了 code 对 header 的修改就不生效了
+	//c.Response.WriteHeader(code)
+	//c.StatusCode = code
+	err := r.Render(c.Response, code)
 	return err
 }
 
@@ -395,12 +396,13 @@ func (c *Context) Fail(code int, s string) {
 	c.String(code, s)
 }
 
-func (c *Context) HandlerWithError(err error) {
+func (c *Context) HandlerWithError(statusCode int, obj any, err error) {
 	if err != nil {
 		code, data := c.engine.ErrHandler(err)
 		c.Json(code, data)
+		return
 	}
-
+	c.Json(statusCode, obj)
 }
 
 // 是否 ASCII 字符

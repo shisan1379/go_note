@@ -28,6 +28,16 @@ func Log(next msgo.HandlerFunc) msgo.HandlerFunc {
 func main() {
 
 	engine := msgo.Default()
+	engine.RegisterErrorhandler(func(err error) (code int, msg any) {
+
+		switch e := err.(type) {
+		case BlogResponse:
+			return http.StatusOK, e.Response()
+		default:
+			return http.StatusInternalServerError, "500 err"
+		}
+
+	})
 	group := engine.Group("user")
 	engine.Logger.Level = msLog.LevelDebug
 	engine.Logger.SetLogPath("./log/")
@@ -178,12 +188,12 @@ func main() {
 		//	ctx.Logger.Info("自定义异常处理")
 		//}
 		//panic(msError)
-		err := BlogError{
+		err := BlogResponse{
 			Code: 999,
 			Data: nil,
 			Msg:  "错误",
 		}
-		ctx.HandlerWithError(err)
+		ctx.HandlerWithError(http.StatusOK, "23", err)
 	})
 
 	group.Post("/jsonArray", func(ctx *msgo.Context) {
@@ -199,14 +209,28 @@ func main() {
 	engine.Run()
 }
 
-type BlogError struct {
+type BlogNoDataResponse struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
+}
+type BlogResponse struct {
 	Data any    `json:"data"`
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
 }
 
-func (e *BlogError) Error() string {
+func (e BlogResponse) Error() string {
 	return e.Msg
+}
+
+func (e BlogResponse) Response() any {
+	if e.Data == nil {
+		return &BlogNoDataResponse{
+			Code: e.Code,
+			Msg:  e.Msg,
+		}
+	}
+	return e
 }
 
 func a(err *mserror.MsError) {

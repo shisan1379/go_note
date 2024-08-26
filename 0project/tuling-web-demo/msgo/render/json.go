@@ -11,15 +11,16 @@ type JSON struct {
 
 var jsonContentType = []string{"application/json; charset=utf-8"}
 
-func (r JSON) Render(w http.ResponseWriter) error {
-	return WriteJSON(w, r.Data)
+func (r JSON) Render(w http.ResponseWriter, code int) error {
+	return WriteJSON(w, r.Data, code)
 }
 func (r JSON) WriteContentType(w http.ResponseWriter) {
 	writeContentType(w, jsonContentType[0])
 }
 
-func WriteJSON(w http.ResponseWriter, obj any) error {
+func WriteJSON(w http.ResponseWriter, obj any, code int) error {
 	writeContentType(w, jsonContentType[0])
+	w.WriteHeader(code)
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return err

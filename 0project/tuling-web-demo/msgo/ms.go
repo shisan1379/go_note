@@ -145,7 +145,7 @@ func (e *Engine) LoadTemplate(pattern string) {
 	e.SetTemplate(tmpl)
 }
 
-func (e Engine) RegisterErrorhandler(eh ErrorHandler) {
+func (e *Engine) RegisterErrorhandler(eh ErrorHandler) {
 	e.ErrHandler = eh
 }
 

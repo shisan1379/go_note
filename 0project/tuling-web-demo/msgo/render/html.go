@@ -20,8 +20,9 @@ type HTMLRender struct {
 	Template *template.Template
 }
 
-func (r HTML) Render(w http.ResponseWriter) error {
+func (r HTML) Render(w http.ResponseWriter, code int) error {
 	r.WriteContentType(w)
+	w.WriteHeader(code)
 	if !r.IsTemplate {
 		_, err := w.Write([]byte(r.Data.(string)))
 		return err
