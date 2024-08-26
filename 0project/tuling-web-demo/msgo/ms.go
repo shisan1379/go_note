@@ -2,6 +2,7 @@ package msgo
 
 import (
 	"fmt"
+	msLog "github.com/shisan1379/msgo/log"
 	"github.com/shisan1379/msgo/render"
 	"html/template"
 	"log"
@@ -50,6 +51,7 @@ func (r *routerGroup) MethodHandle(routerPath string, method string, handleFunc 
 // router 路由
 type router struct {
 	routerGroups []*routerGroup
+	engine       *Engine
 }
 
 // Group 为路由添加组
@@ -64,6 +66,7 @@ func (receiver *router) Group(name string) *routerGroup {
 			children: make([]*treeNode, 0),
 		},
 	}
+	group.Use(receiver.engine.Middles...)
 	receiver.routerGroups = append(receiver.routerGroups, &group)
 	return &group
 }
@@ -118,12 +121,17 @@ func (r routerGroup) Head(name string, handleFunc HandlerFunc, ware ...MiddleWar
 	r.addRouter(http.MethodHead, name, handleFunc, ware...)
 }
 
+type ErrorHandler func(err error) (code int, msg any)
+
 // Engine  引擎
 type Engine struct {
 	router
 	funcMap    template.FuncMap
 	HTMLRender render.HTMLRender
 	pool       sync.Pool
+	Logger     *msLog.Logger
+	Middles    []MiddleWare
+	ErrHandler ErrorHandler
 }
 
 func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
@@ -137,6 +145,10 @@ func (e *Engine) LoadTemplate(pattern string) {
 	e.SetTemplate(tmpl)
 }
 
+func (e Engine) RegisterErrorhandler(eh ErrorHandler) {
+	e.ErrHandler = eh
+}
+
 func (e *Engine) SetTemplate(t *template.Template) {
 	e.HTMLRender = render.HTMLRender{Template: t}
 }
@@ -146,6 +158,7 @@ func (e *Engine) ServeHTTP(write http.ResponseWriter, request *http.Request) {
 	context := e.pool.Get().(*Context)
 	context.Response = write
 	context.Request = request
+	context.Logger = e.Logger
 
 	e.httpRequestHandle(context, write, request)
 
@@ -200,6 +213,16 @@ func New() *Engine {
 
 }
 
+func Default() *Engine {
+	engine := New()
+	engine.Logger = msLog.Default()
+	engine.Use(Logging)  //默认使用log 中间件
+	engine.Use(Recovery) //默认使用 recover中间件
+	engine.router.engine = engine
+	return engine
+
+}
+
 func (e *Engine) allocateContext() any {
 	return &Context{engine: e}
 }
@@ -217,4 +240,8 @@ func (e *Engine) Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (e *Engine) Use(middles ...MiddleWare) {
+	e.Middles = middles
 }

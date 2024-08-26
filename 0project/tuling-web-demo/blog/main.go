@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/shisan1379/msgo"
 	msLog "github.com/shisan1379/msgo/log"
+	"github.com/shisan1379/msgo/mserror"
 	"io"
 	"log"
 	"net/http"
@@ -25,9 +27,11 @@ func Log(next msgo.HandlerFunc) msgo.HandlerFunc {
 }
 func main() {
 
-	engine := msgo.New()
+	engine := msgo.Default()
 	group := engine.Group("user")
-	logger := msLog.Default()
+	engine.Logger.Level = msLog.LevelDebug
+	engine.Logger.SetLogPath("./log/")
+
 	//前置中间件
 	group.Use(func(next msgo.HandlerFunc) msgo.HandlerFunc {
 		return func(ctx *msgo.Context) {
@@ -36,8 +40,6 @@ func main() {
 			fmt.Println("post handler")
 		}
 	})
-
-	group.Use(msgo.Logging)
 
 	//group.PostHandle(func(next msgo.HandlerFunc) msgo.HandlerFunc {
 	//	return func(ctx *msgo.Context) {
@@ -154,24 +156,34 @@ func main() {
 			}
 		}
 	})
-
 	group.Post("/jsonParam", func(ctx *msgo.Context) {
 
-		logger.WithFields(msLog.Fields{
-			"name": "231",
-		}).Debug("debug fields")
+		//logger.WithFields(msLog.Fields{
+		//	"name": "231",
+		//}).Debug("debug fields")
 
-		logger.Debug("我是debug日志")
-		logger.Info("我是info日志")
-		logger.Error("我是error日志")
+		//ctx.Logger.Debug("我是debug日志")
 
-		user := &User{}
-		err := ctx.DealJson(user)
-		if err == nil {
-			ctx.Json(http.StatusOK, user)
-		} else {
-			log.Println(err)
+		//user := &User{}
+		//err := ctx.DealJson(user)
+		//err := &mserror.MsError{}
+		//err.Result(func(msError *mserror.MsError) {
+		//	ctx.Logger.Info(msError.Error())
+		//	ctx.Json(http.StatusInternalServerError, err)
+		//})
+		//a(err)
+
+		//msError := mserror.MsError{Msg: "a err"}
+		//msError.ErrFuc = func(msError *mserror.MsError) {
+		//	ctx.Logger.Info("自定义异常处理")
+		//}
+		//panic(msError)
+		err := BlogError{
+			Code: 999,
+			Data: nil,
+			Msg:  "错误",
 		}
+		ctx.HandlerWithError(err)
 	})
 
 	group.Post("/jsonArray", func(ctx *msgo.Context) {
@@ -185,4 +197,20 @@ func main() {
 	})
 
 	engine.Run()
+}
+
+type BlogError struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data any    `json:"data"`
+}
+
+func (e *BlogError) Error() string {
+	return e.Msg
+}
+
+func a(err *mserror.MsError) {
+	//发生错误的时候放入一个地方，然后统一处理
+
+	err.Put(errors.New("a err"))
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	validator "github.com/shisan1379/msgo/Validator"
 	"github.com/shisan1379/msgo/binding"
+	msLog "github.com/shisan1379/msgo/log"
 	"github.com/shisan1379/msgo/render"
 	"html/template"
 	"io"
@@ -30,6 +31,7 @@ type Context struct {
 	DisallowUnknownFields bool // 参数中必须含有结构体的值
 	IsValidate            bool // 是否开启参数校验（按照规则校验参数）
 	StatusCode            int
+	Logger                *msLog.Logger
 }
 
 func checkParam(value reflect.Value, data any, decoder *json.Decoder) error {
@@ -387,6 +389,18 @@ func (c *Context) MustBindWith(data any, b binding.Binding) error {
 }
 func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
 	return b.Bind(c.Request, obj)
+}
+
+func (c *Context) Fail(code int, s string) {
+	c.String(code, s)
+}
+
+func (c *Context) HandlerWithError(err error) {
+	if err != nil {
+		code, data := c.engine.ErrHandler(err)
+		c.Json(code, data)
+	}
+
 }
 
 // 是否 ASCII 字符

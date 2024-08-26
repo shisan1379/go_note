@@ -9,7 +9,7 @@ import (
 type TextFormatter struct {
 }
 
-func (f *TextFormatter) Format(param *LoggingFormatterParam) string {
+func (f *TextFormatter) Format(param *LoggingFormatParam) string {
 	now := time.Now()
 	fieldsString := ""
 	if param.LoggerFields != nil {
@@ -30,7 +30,7 @@ func (f *TextFormatter) Format(param *LoggingFormatterParam) string {
 	if param.Level == LevelError {
 		msgInfo = "\n Error Cause By: "
 	}
-	if param.Color {
+	if param.IsColor {
 		//要带颜色  error的颜色 为红色 info为绿色 debug为蓝色
 		levelColor := f.LevelColor(param.Level)
 		msgColor := f.MsgColor(param.Level)

@@ -30,89 +30,23 @@ const (
 
 var DefaultWriter io.Writer = os.Stdout
 
-type LoggerConfig struct {
+type LoggingConfig struct {
 	Formatter LoggerFormatter
 	out       io.Writer
 	IsColor   bool
 }
 
-type LoggerFormatter func(params LogFormatterParams) string
+type LoggerFormatter = func(params *LogFormatterParams) string
 
 type LogFormatterParams struct {
-	Request    *http.Request
-	TimeStamp  time.Time
-	StatusCode int
-	Latency    time.Duration
-	ClientIP   net.IP
-	Method     string
-	Path       string
-}
-
-func Logging(next HandlerFunc) HandlerFunc {
-	return LoggerWithConfig(LoggerConfig{}, next)
-}
-
-func LoggerWithConfig(conf LoggerConfig, next HandlerFunc) HandlerFunc {
-	formatter := conf.Formatter
-	if formatter == nil {
-		formatter = defaultLogFormatter
-	}
-	out := conf.out
-	if out == nil {
-		out = DefaultWriter
-		conf.IsColor = true
-	}
-	return func(ctx *Context) {
-		param := LogFormatterParams{
-			Request: ctx.Request,
-		}
-		// Start timer
-		start := time.Now()
-		path := ctx.Request.URL.Path
-		raw := ctx.Request.URL.RawQuery
-		//执行业务
-		next(ctx)
-		// stop timer
-		stop := time.Now()
-		latency := stop.Sub(start)
-		ip, _, _ := net.SplitHostPort(strings.TrimSpace(ctx.Request.RemoteAddr))
-		clientIP := net.ParseIP(ip)
-		method := ctx.Request.Method
-		statusCode := ctx.StatusCode
-
-		if raw != "" {
-			path = path + "?" + raw
-		}
-
-		param.ClientIP = clientIP
-		param.TimeStamp = stop
-		param.Latency = latency
-		param.StatusCode = statusCode
-		param.Method = method
-		param.Path = path
-		fmt.Fprint(out, formatter(param))
-	}
-}
-
-var defaultLogFormatter = func(params LogFormatterParams) string {
-	statusCodeColor := params.StatusCodeColor()
-	resetColor := params.ResetColor()
-	if params.Latency > time.Minute {
-		params.Latency = params.Latency.Truncate(time.Second)
-	}
-	// 这里是通过 ANSI转义序列，实现彩色展示的
-	// ANSI转义序列以ESC字符（\033或\x1b）开头，后跟一个[字符，然后是参数列表（由分号分隔的数字组成），最后以m字符结束。例如，\033[31m是一个将文本颜色设置为红色的ANSI转义序列。
-	// resetColor 变量所代表的值，则代表重置样式
-	// 组合过程 样式 + 字符串 + 重置样式 + 字符串
-	return fmt.Sprintf("%s[msgo]%s |%s %v %s| %s %3d %s |%s %13v %s| %15s  |%s %-7s %s %s %#v %s",
-		yellow, resetColor,
-		blue, params.TimeStamp.Format("2006/01/02 - 15:04:05"), resetColor,
-		statusCodeColor, params.StatusCode, resetColor,
-		red, params.Latency, resetColor,
-		params.ClientIP,
-		magenta, params.Method, resetColor,
-		cyan, params.Path, resetColor,
-	)
+	Request        *http.Request
+	TimeStamp      time.Time
+	StatusCode     int
+	Latency        time.Duration
+	ClientIP       net.IP
+	Method         string
+	Path           string
+	IsDisplayColor bool
 }
 
 func (p *LogFormatterParams) StatusCodeColor() string {
@@ -124,6 +58,78 @@ func (p *LogFormatterParams) StatusCodeColor() string {
 		return red
 	}
 }
+
 func (p *LogFormatterParams) ResetColor() string {
 	return reset
+}
+
+var defaultFormatter = func(params *LogFormatterParams) string {
+	var statusCodeColor = params.StatusCodeColor()
+	var resetColor = params.ResetColor()
+	if params.Latency > time.Minute {
+		params.Latency = params.Latency.Truncate(time.Second)
+	}
+	if params.IsDisplayColor {
+		return fmt.Sprintf("%s [msgo] %s |%s %v %s| %s %3d %s |%s %13v %s| %15s  |%s %-7s %s %s %#v %s \n",
+			yellow, resetColor, blue, params.TimeStamp.Format("2006/01/02 - 15:04:05"), resetColor,
+			statusCodeColor, params.StatusCode, resetColor,
+			red, params.Latency, resetColor,
+			params.ClientIP,
+			magenta, params.Method, resetColor,
+			cyan, params.Path, resetColor,
+		)
+	}
+	return fmt.Sprintf("[msgo] %v | %3d | %13v | %15s |%-7s %#v",
+		params.TimeStamp.Format("2006/01/02 - 15:04:05"),
+		params.StatusCode,
+		params.Latency, params.ClientIP, params.Method, params.Path,
+	)
+
+}
+
+func LoggingWithConfig(conf LoggingConfig, next HandlerFunc) HandlerFunc {
+	formatter := conf.Formatter
+	if formatter == nil {
+		formatter = defaultFormatter
+	}
+	out := conf.out
+	displayColor := false
+	if out == nil {
+		out = DefaultWriter
+		displayColor = true
+	}
+	return func(ctx *Context) {
+		r := ctx.Request
+		param := &LogFormatterParams{
+			Request:        r,
+			IsDisplayColor: displayColor,
+		}
+		// Start timer
+		start := time.Now()
+		path := r.URL.Path
+		raw := r.URL.RawQuery
+		next(ctx)
+		stop := time.Now()
+		latency := stop.Sub(start)
+		ip, _, _ := net.SplitHostPort(strings.TrimSpace(ctx.Request.RemoteAddr))
+		clientIP := net.ParseIP(ip)
+		method := r.Method
+		statusCode := ctx.StatusCode
+
+		if raw != "" {
+			path = path + "?" + raw
+		}
+
+		param.TimeStamp = stop
+		param.StatusCode = statusCode
+		param.Latency = latency
+		param.Path = path
+		param.ClientIP = clientIP
+		param.Method = method
+
+		fmt.Fprint(out, formatter(param))
+	}
+}
+func Logging(next HandlerFunc) HandlerFunc {
+	return LoggingWithConfig(LoggingConfig{}, next)
 }
