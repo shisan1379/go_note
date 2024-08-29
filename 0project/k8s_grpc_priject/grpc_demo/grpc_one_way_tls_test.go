@@ -22,7 +22,7 @@ func TestTlsServer(t *testing.T) {
 	}
 	rpcServer := grpc.NewServer(grpc.Creds(file))
 
-	service.RegisterGreeterServer(rpcServer, &server{})
+	service.RegisterGreeterServer(rpcServer, &RpcServer{})
 
 	listener, err := net.Listen("tcp", ":8002")
 	if err != nil {

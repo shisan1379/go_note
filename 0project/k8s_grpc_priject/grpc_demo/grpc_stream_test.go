@@ -5,29 +5,39 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/anypb"
+	"io"
 	"k8s_grpc_priject/grpc_demo/service"
 	"log"
 	"net"
 	"testing"
-	"time"
 )
 
-type RpcServer struct {
-	service.UnimplementedGreeterServer
-}
-
-func (c *RpcServer) SayHello(ctx context.Context, req *service.HelloRequest) (*service.HelloReply, error) {
-	log.Printf("请求值： %v", req)
-	a, _ := anypb.New(&service.DataMsg{Data: "data is me"})
-	return &service.HelloReply{
-		Msg:  "hello",
-		Data: a,
-	}, nil
+func (c *RpcServer) ClientStream(stream service.Greeter_ClientStreamServer) error {
+	count := 0
+	for {
+		//源源不断的去接收客户端发来的信息
+		recv, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		fmt.Println("服务端接收到的流", recv.Msg, count)
+		count++
+		if count > 10 {
+			rsp := &service.HelloReply{Msg: "1"}
+			err := stream.SendAndClose(rsp)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
 }
 
 // 服务端
-func TestServer(t *testing.T) {
+func TestStreamServer(t *testing.T) {
 	listen, _ := net.Listen("tcp", ":9090")
 	rpcServer := grpc.NewServer()
 	service.RegisterGreeterServer(rpcServer, &RpcServer{})
@@ -42,30 +52,8 @@ func TestServer(t *testing.T) {
 
 }
 
-// 客户端-使用 Dial 方式创建 - 不验证
-func TestInsecureClientDial(t *testing.T) {
-
-	client, err := grpc.Dial("127.0.0.1:9090",
-		grpc.WithInsecure(),           // 这个选项告诉 gRPC 客户端忽略 TLS 证书验证
-		grpc.WithBlock(),              // 这个选项会让 Dial 阻塞，直到连接建立或发生错误
-		grpc.WithTimeout(time.Second)) // 设置连接超时时间为 1 秒
-	if err != nil {
-		log.Fatalf("未连接： %v", err)
-	}
-	defer client.Close()
-
-	greeterClient := service.NewGreeterClient(client)
-	hello, err := greeterClient.SayHello(context.Background(), &service.HelloRequest{Msg: "01"})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Printf("返回值 %v", hello)
-}
-
 // 客户端-使用 NewClient 方式创建 - 不验证
-func TestInsecureClient(t *testing.T) {
+func TestStreamInsecureClient(t *testing.T) {
 	// 创建一个不安全的客户端凭据，这通常用于测试环境，不建议在生产环境中使用
 	cred := insecure.NewCredentials()
 	// 使用上述凭据配置gRPC的传输凭据

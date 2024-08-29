@@ -1,11 +1,20 @@
 //版本号
 syntax = "proto3";
+
 // ./service 表示在下 ./service 生成
 // service 则表示生成的go 文件的包名
 option go_package = "./service;service";
 
+import "user.proto";
+import "google/protobuf/any.proto";
+
 // 包名
 package service;
+
+message DataMsg {
+    string data = 1;
+}
+
 
 // 消息
 message HelloRequest {
@@ -14,13 +23,26 @@ message HelloRequest {
     optional string msg2 = 2;
     //可重复 - 在go 中表现为切片
     repeated string address = 3;
+
+    User user = 4;
+
+
 }
 
 // 消息 - 响应
 message HelloReply {
     string msg = 1;
+    google.protobuf.Any data = 2;
 }
 
 service Greeter {
     rpc SayHello (HelloRequest) returns (HelloReply) {}
+    rpc ClientStream (stream HelloRequest) returns (HelloReply) {}
+    rpc ServerStream (HelloRequest) returns (stream HelloReply) {}
+
+    rpc TwoStream (stream HelloRequest) returns (stream HelloReply) {}
 }
+
+
+
+
