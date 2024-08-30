@@ -92,6 +92,10 @@ func TestTokenClient(t *testing.T) {
 		User:     "admin",
 		Password: "admin",
 	}
+
+	//设置出站凭据
+	//grpc.WithPerRPCCredentials(user)
+
 	client, err := grpc.NewClient(":8002", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(user))
 
 	if err != nil {

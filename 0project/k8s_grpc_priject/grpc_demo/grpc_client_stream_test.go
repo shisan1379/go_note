@@ -1,3 +1,5 @@
+// 客户端流 demo
+
 package main
 
 import (
@@ -9,9 +11,12 @@ import (
 	"k8s_grpc_priject/grpc_demo/service"
 	"log"
 	"net"
+	"strconv"
 	"testing"
+	"time"
 )
 
+// 客户端流处理服务实现
 func (c *RpcServer) ClientStream(stream service.Greeter_ClientStreamServer) error {
 	count := 0
 	for {
@@ -49,7 +54,6 @@ func TestStreamServer(t *testing.T) {
 	} else {
 		fmt.Println("RpcServer started")
 	}
-
 }
 
 // 客户端-使用 NewClient 方式创建 - 不验证
@@ -69,20 +73,45 @@ func TestStreamInsecureClient(t *testing.T) {
 
 	//创建一个Greeter服务的客户端
 	greeterClient := service.NewGreeterClient(client)
-	background := context.Background()
-	// 调用Greeter服务的SayHello方法，发送请求并等待响应
-	hello, err := greeterClient.SayHello(background,
-		&service.HelloRequest{
-			Msg:  "01",
-			User: &service.User{Name: "123"},
-		},
-	)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	var dd service.DataMsg
-	err = hello.Data.UnmarshalTo(&dd)
 
-	fmt.Printf("返回值 %s , %s \n", hello.Msg, dd.Data)
+	stream, err := greeterClient.ClientStream(context.Background())
+	if err != nil {
+		log.Fatal("获取流出错", err)
+	}
+	// 创建一个基于 struct 的 channel，容量为1
+	rsp := make(chan struct{}, 1)
+	// 10 发送消息
+	go send10TimesRequest(stream, rsp)
+	// 当发送10次后，等待返回值
+	select {
+	case <-rsp:
+		//关闭并接收返回值
+		recv, err := stream.CloseAndRecv()
+		if err != nil {
+			log.Fatal(err)
+		}
+		stock := recv.Msg
+		fmt.Println("客户端收到响应：", stock)
+	}
+}
+func send10TimesRequest(stream service.Greeter_ClientStreamClient, rsp chan struct{}) {
+	count := 0
+	var i int
+	for {
+		i++
+		request := &service.HelloRequest{
+			Msg: strconv.Itoa(i),
+		}
+		// 基于流发送消息
+		err := stream.SendMsg(request)
+		if err != nil {
+			log.Fatal(err)
+		}
+		time.Sleep(time.Second)
+		count++
+		if count > 10 {
+			rsp <- struct{}{}
+			break
+		}
+	}
 }

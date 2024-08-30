@@ -9,6 +9,7 @@ import (
 	"k8s_grpc_priject/grpc_demo/service"
 	"log"
 	"net"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -97,4 +98,29 @@ func TestInsecureClient(t *testing.T) {
 	err = hello.Data.UnmarshalTo(&dd)
 
 	fmt.Printf("返回值 %s , %s \n", hello.Msg, dd.Data)
+}
+
+type userClient struct {
+	clients []RpcServer
+	index   int64
+}
+
+// 简单池化
+func (r *userClient) Get() RpcServer {
+	//1. index + 1，相当于每轮询使用 池中的资源
+	index := atomic.AddInt64(&r.index, 1)
+	i := int(index) % len(r.clients)
+	return r.clients[i]
+}
+
+func NewClientPool(size int) {
+	var cs []RpcServer
+	for i := 0; i < size; i++ {
+		server := RpcServer{}
+		cs = append(cs, server)
+	}
+}
+
+func (r *userClient) Release() {
+
 }

@@ -32,7 +32,7 @@ message HelloRequest {
 // 消息 - 响应
 message HelloReply {
     string msg = 1;
-    google.protobuf.Any data = 2;
+    optional google.protobuf.Any data = 2;
 }
 
 service Greeter {
