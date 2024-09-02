@@ -88,6 +88,7 @@ func (a *Authentication) RequireTransportSecurity() bool {
 }
 
 func TestTokenClient(t *testing.T) {
+	// token验证 实际上是将该数据注入到拦截器中
 	user := &Authentication{
 		User:     "admin",
 		Password: "admin",

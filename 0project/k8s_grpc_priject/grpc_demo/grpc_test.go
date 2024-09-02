@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	"k8s_grpc_priject/grpc_demo/service"
 	"log"
@@ -19,12 +21,13 @@ type RpcServer struct {
 }
 
 func (c *RpcServer) SayHello(ctx context.Context, req *service.HelloRequest) (*service.HelloReply, error) {
+	
 	log.Printf("请求值： %v", req)
 	a, _ := anypb.New(&service.DataMsg{Data: "data is me"})
 	return &service.HelloReply{
 		Msg:  "hello",
 		Data: a,
-	}, nil
+	}, status.Error(codes.OK, "")
 }
 
 // 服务端
@@ -47,8 +50,8 @@ func TestServer(t *testing.T) {
 func TestInsecureClientDial(t *testing.T) {
 
 	client, err := grpc.Dial("127.0.0.1:9090",
-		grpc.WithInsecure(),           // 这个选项告诉 gRPC 客户端忽略 TLS 证书验证
-		grpc.WithBlock(),              // 这个选项会让 Dial 阻塞，直到连接建立或发生错误
+		grpc.WithInsecure(), // 这个选项告诉 gRPC 客户端忽略 TLS 证书验证
+		grpc.WithBlock(),    // 这个选项会让 Dial 阻塞，直到连接建立或发生错误
 		grpc.WithTimeout(time.Second)) // 设置连接超时时间为 1 秒
 	if err != nil {
 		log.Fatalf("未连接： %v", err)

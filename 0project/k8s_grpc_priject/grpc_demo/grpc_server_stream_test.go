@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"io"
 	"k8s_grpc_priject/grpc_demo/service"
 	"log"
@@ -47,7 +48,12 @@ func (c *RpcServer) TwoStream(stream service.Greeter_TwoStreamServer) error {
 // 服务端
 func TestStreamServerServer(t *testing.T) {
 	listen, _ := net.Listen("tcp", ":9090")
-	rpcServer := grpc.NewServer()
+	rpcServer := grpc.NewServer(grpc.UnaryInterceptor(func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+
+		grpc.SetHeader(ctx, metadata.Pairs("token", "server token"))
+
+		return handler(ctx, req)
+	}))
 	service.RegisterGreeterServer(rpcServer, &RpcServer{})
 
 	err := rpcServer.Serve(listen)
@@ -81,6 +87,7 @@ func TestStreamServerInsecureClient(t *testing.T) {
 	if err != nil {
 		log.Fatalf("获取服务端流失败 %v", err)
 	}
+
 	for i := 0; i < 10; i++ {
 
 		recv, err := stream.Recv()
@@ -105,6 +112,10 @@ func TestStreamServerInsecureClient(t *testing.T) {
 
 func towSend(prodClient service.GreeterClient) {
 	stream, err := prodClient.TwoStream(context.Background())
+
+	trailer := stream.Trailer()
+	token := trailer.Get("token")
+	fmt.Println("token:", token)
 
 	var i int
 	for {
