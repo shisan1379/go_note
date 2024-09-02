@@ -6,10 +6,14 @@ import (
 	"github.com/shisan1379/msgo"
 	msLog "github.com/shisan1379/msgo/log"
 	"github.com/shisan1379/msgo/mserror"
+	mspool "github.com/shisan1379/msgo/pool"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"sync"
+	"time"
 )
 
 type User struct {
@@ -204,6 +208,25 @@ func main() {
 		} else {
 			log.Println(err)
 		}
+	})
+	pool, _ := mspool.NewPool(5)
+
+	group.Post("/pool", func(ctx *msgo.Context) {
+
+		now := time.Now()
+		var wg sync.WaitGroup
+		wg.Add(5)
+
+		for i := 0; i < 5; i++ {
+			pool.Submit(func() {
+				fmt.Println(strconv.Itoa(i))
+				time.Sleep(time.Duration(i+1) * time.Second)
+				wg.Done()
+			})
+		}
+		wg.Wait()
+		fmt.Println("time:", time.Now().UnixMilli()-now.UnixMilli())
+		ctx.Json(http.StatusOK, "success")
 	})
 
 	engine.Run()

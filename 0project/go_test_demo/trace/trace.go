@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"runtime/trace"
-	"strconv"
 )
 
 func main() {
@@ -23,11 +22,11 @@ func main() {
 		panic(err)
 	}
 	defer trace.Stop()
-	for i := 0; i < 10; i++ {
-		go func() {
-			fmt.Println(strconv.Itoa(i) + "goroutine")
-		}()
-	}
+	//for i := 0; i < 10; i++ {
+	//	go func() {
+	//		fmt.Println(strconv.Itoa(i) + "goroutine")
+	//	}()
+	//}
 
 	//main
 	fmt.Println("Hello World")
