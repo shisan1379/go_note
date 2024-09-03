@@ -79,5 +79,8 @@ Go 语言学习笔记
 # k8s+grpc云原生实战
 - [服务概述及K8S治理微服务的优势](6.k8sgrpc云原生实战/1.服务概述及K8S治理微服务的优势.md)
 - [gRPC学习](6.k8sgrpc云原生实战/2.gRPC学习.md)
-- [K8S核心组件运行机制](6.k8sgrpc云原生实战/3.K8S核心组件运行机制.md)
+- [K8S介绍](6.k8sgrpc云原生实战/3.K8S介绍.md)
+- [K8S-APIServer](6.k8sgrpc云原生实战/4.K8S-APIServer.md)
+- [K8S-ControllerManager](6.k8sgrpc云原生实战/5.K8S-ControllerManager.md)
+- [K8S-scheduler](6.k8sgrpc云原生实战/6.K8S-scheduler.md)
   
