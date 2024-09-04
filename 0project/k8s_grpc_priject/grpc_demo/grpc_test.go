@@ -21,7 +21,7 @@ type RpcServer struct {
 }
 
 func (c *RpcServer) SayHello(ctx context.Context, req *service.HelloRequest) (*service.HelloReply, error) {
-	
+
 	log.Printf("请求值： %v", req)
 	a, _ := anypb.New(&service.DataMsg{Data: "data is me"})
 	return &service.HelloReply{

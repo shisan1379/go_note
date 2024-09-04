@@ -83,4 +83,10 @@ Go 语言学习笔记
 - [K8S-APIServer](6.k8sgrpc云原生实战/4.K8S-APIServer.md)
 - [K8S-ControllerManager](6.k8sgrpc云原生实战/5.K8S-ControllerManager.md)
 - [K8S-scheduler](6.k8sgrpc云原生实战/6.K8S-scheduler.md)
+- [K8S-kubelet](6.k8sgrpc云原生实战/7.K8S-kubelet.md)
+- [pod创建和启动流程](6.k8sgrpc云原生实战/8.pod创建和启动流程.md)
+- [k8s的高可用](6.k8sgrpc云原生实战/9.k8s的高可用.md)
+- [k8s的安全机制](6.k8sgrpc云原生实战/10.k8s的安全机制.md)
+- [搭建k8s集群](6.k8sgrpc云原生实战/11.搭建k8s集群.md)
+  
   
