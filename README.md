@@ -105,6 +105,7 @@ Go 语言学习笔记
 
 
 - [资源隔离-Namespace](7.docker学习/9.资源隔离-Namespace.md)
+- [资源隔离-CGroup](7.docker学习/10.资源隔离-CGroup.md)
 
 ## 容器编排
 
