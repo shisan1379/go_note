@@ -105,7 +105,8 @@ Go 语言学习笔记
 
 
 - [资源隔离-Namespace](7.docker学习/9.资源隔离-Namespace.md)
-- [资源隔离-CGroup](7.docker学习/10.资源隔离-CGroup.md)
+- [资源限制-CGroup](7.docker学习/10.资源限制-CGroup.md)
+- [Docker 组件作用及其底层工作原理](7.docker学习/11.Docker组件作用及其底层工作原理.md)
 
 ## 容器编排
 
