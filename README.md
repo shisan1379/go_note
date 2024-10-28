@@ -112,9 +112,6 @@ Go 语言学习笔记
 
 - [AUFS 文件系统原理及生产环境的最佳配置](7.docker学习/14.AUFS文件系统原理及生产环境的最佳配置.md)
 - [Devicemapper  文件系统原理及生产环境的最佳配置](7.docker学习/14.Devicemapper文件系统原理及生产环境的最佳配置.md)
-
-- [Devicemapper  文件系统原理及生产环境的最佳配置](7.docker学习/14.Devicemapper文件系统原理及生产环境的最佳配置.md)
-
 - [OverlayFS  文件系统原理及生产环境的最佳配置](7.docker学习/14.OverlayFS文件系统原理及生产环境的最佳配置.md)
 
 ## 容器编排
