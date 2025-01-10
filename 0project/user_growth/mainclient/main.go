@@ -12,7 +12,7 @@ import (
 
 func main() {
 	//连接到服务端
-	add := flag.String("addr", "127.0.0.1:8080", "server listen address")
+	add := flag.String("addr", "127.0.0.1:80", "server listen address")
 
 	// 创建一个不安全的客户端凭据，这通常用于测试环境，不建议在生产环境中使用
 	cred := insecure.NewCredentials()

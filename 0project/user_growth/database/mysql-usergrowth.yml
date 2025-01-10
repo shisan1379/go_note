@@ -1,0 +1,12 @@
+# 生成 models 的命令
+# reverse -f mysql-usergrowth.yml
+---
+kind: reverse
+name: user_growth
+source:
+  database: mysql
+  conn_str: 'root:admin@tcp(127.0.0.1:3306)/user_growth?charset=utf8'
+targets:
+- type: codes
+  language: golang
+  output_dir: ../models/user_growth/
