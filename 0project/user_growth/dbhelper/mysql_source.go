@@ -3,6 +3,7 @@ package dbhelper
 import (
 	"fmt"
 	"log"
+	"time"
 	"user_growth/conf"
 	"xorm.io/xorm"
 )
@@ -14,8 +15,8 @@ func InitDb() {
 		return
 	}
 
-	sourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
-		conf.GlobalConfig.DB.UserName,
+	sourceName := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s",
+		conf.GlobalConfig.DB.Username,
 		conf.GlobalConfig.DB.Password,
 		conf.GlobalConfig.DB.Host,
 		conf.GlobalConfig.DB.Port,
@@ -25,6 +26,22 @@ func InitDb() {
 	engine, err := xorm.NewEngine(conf.GlobalConfig.DB.Engine, sourceName)
 	if err != nil {
 		log.Fatalf("dbhelper NewEngine err:%v", err)
+	} else {
+		dbEngine = engine
+	}
+	if conf.GlobalConfig.DB.MaxIdleConns > 0 {
+		dbEngine.SetMaxIdleConns(conf.GlobalConfig.DB.MaxIdleConns)
 	}
 
+	if conf.GlobalConfig.DB.MaxOpenConns > 0 {
+		dbEngine.SetMaxOpenConns(conf.GlobalConfig.DB.MaxOpenConns)
+	}
+
+	if conf.GlobalConfig.DB.ConnMaxLifetime > 0 {
+		dbEngine.SetConnMaxLifetime(time.Minute * time.Duration(conf.GlobalConfig.DB.ConnMaxLifetime))
+	}
+}
+
+func GetDb() *xorm.Engine {
+	return dbEngine
 }
