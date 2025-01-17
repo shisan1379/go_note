@@ -2,6 +2,7 @@ package dbhelper
 
 import (
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"time"
 	"user_growth/conf"

@@ -104,7 +104,7 @@ message UserGradeInfoRequest{
   int32  uid = 1;
 }
 message UserGradeInfoReply{
-  TbGradeInfo data = 1;
+  TbGradeUser data = 1;
 }
 
 message UserGradeChangeRequest{
@@ -116,16 +116,62 @@ message UserGradeChangeReply{
 }
 
 // 数据表模型
-message TbCoinDetail{
-  int32  id = 1;
-  int32  uid = 2;
-  int32  task_id = 3;
+message TbCoinDetail {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 task_id = 3;
+  int32 coin = 4;
   string sys_created = 5;
   string sys_updated = 6;
 }
-message TbCoinTask{}
-message TbCoinUser{}
 
-message TbGradeInfo{}
-message TbGradePrivilege{}
-message TbGradeUser{}
+message TbCoinTask {
+  int32 id = 1;
+  string task = 2;
+  int32 coin = 3;
+  int32 limit = 4;
+  string start = 5;
+  string sys_created = 6;
+  string sys_updated = 7;
+  int32 sys_status = 8;
+}
+
+message TbCoinUser {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 coins = 3;
+  string sys_created = 4;
+  string sys_updated = 5;
+}
+
+message TbGradeInfo {
+  int32 id = 1;
+  string title = 2;
+  string description = 3;
+  int32 score = 4;
+  int32 expired = 5;
+  string sys_created = 6;
+  string sys_updated = 7;
+}
+
+message TbGradePrivilege {
+  int32 id = 1;
+  int32 grade_id = 2;
+  string product = 3;
+  string function = 4;
+  string description = 5;
+  int32 expired = 6;
+  string sys_created = 7;
+  string sys_updated = 8;
+  int32 sys_status = 9;
+}
+
+message TbGradeUser {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 grade_id = 3;
+  string expired = 4;
+  int32 score = 5;
+  string sys_created = 6;
+  string sys_updated = 7;
+}

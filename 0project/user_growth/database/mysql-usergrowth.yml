@@ -1,4 +1,4 @@
-# 生成 models 的命令
+# 生成 models 的命令 在当前目录执行
 # reverse -f mysql-usergrowth.yml
 ---
 kind: reverse
@@ -9,4 +9,4 @@ source:
 targets:
 - type: codes
   language: golang
-  output_dir: ../models/user_growth/
+  output_dir: ../models/
