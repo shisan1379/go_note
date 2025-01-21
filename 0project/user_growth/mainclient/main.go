@@ -63,7 +63,7 @@ func main() {
 	cGrade := pb.NewUserGradeClient(conn)
 
 	// 测试1：UserCoinServer.ListTasks
-	r1, err1 := cCoin.ListTask(ctx, &pb.ListTaskRequest{})
+	r1, err1 := cCoin.ListTasks(ctx, &pb.ListTasksRequest{})
 	if err1 != nil {
 		log.Printf("cCoin.ListTasks error=%v\n", err1)
 	} else {

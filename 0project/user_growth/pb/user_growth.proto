@@ -1,121 +1,156 @@
-// 定义了 proto 的版本 ，目前最新版本为 3
 syntax = "proto3";
 
-//option 关键字用来对.proto 文件进行一些设置，
-
-//其中go_package 是必需的设置，而且 go_package 的值必须是包导入的路径。package 关键字指定生成的.pb.go 文件所在的包名。
-//"."表示生成的Go文件将与.proto文件位于同一目录下（或模块中）
-//"service"则是包名。这意呀着所有生成的Go文件都将属于service包。
-//option go_package = ".;service";
 option go_package = "user_growth/pb";
 
-//如果客户端不需要java则无需编写
-
-////指定了Java代码中使用的包名。在这个例子中，生成的Java类将被放在io.grpc.examples.helloworld包中
-//option java_package = "io.grpc.examples.helloworld";
-////当使用protoc（Protocol Buffers编译器）为Java生成代码时，如果.proto文件中定义了多个消息或服务，它们通常会被放在一个外部类中。
-//// 这个选项允许你为这个外部类指定一个自定义的名称，而不是默认的基于文件名生成的名称
-//option java_outer_classname = "HelloWorldProto";
-////这个选项控制是否应该为每个定义（如消息、枚举、服务等）在Java中生成单独的文件。当设置为true时，每个定义都将被放置在其自己的.java文件中，而不是全部放在一个文件中。这有助于减少单个文件的大小，提高代码的可读性和可维护性
-//option java_multiple_files = true;
-
-//定义 Protobuf 文件的包名
 package UserGrowth;
 
-//服务
-service UserCoin{
-  // 获取所有的积分服务列表
-  rpc ListTask(ListTaskRequest)returns(ListTaskReply){}
+import "google/api/annotations.proto";
+
+service UserCoin {
+  // 获取所有的积分任务列表
+  rpc ListTasks(ListTasksRequest) returns (ListTasksReply) {
+    option (google.api.http) = {
+      get: "/v1/UserGrowth.UserCoin/ListTasks"
+    };
+  }
   // 获取用户的积分信息
-  rpc UserCoinInfo(UserCoinInfoRequest)returns(UserCoinInfoReply){}
+  rpc UserCoinInfo(UserCoinInfoRequest) returns (UserCoinInfoReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserCoin/UserCoinInfo"
+      body: "*"
+    };
+  }
   // 获取用户的积分明细列表
-  rpc UserDetails(UserDetailsRequest)returns(UserDetailsReply){}
-  // 调整用户积分，奖励和惩罚都是使用这个接口
-  rpc UserCoinChange(UserCoinChangeRequest)returns(UserCoinChangeReply){}
+  rpc UserDetails(UserDetailsRequest) returns (UserDetailsReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserCoin/UserDetails"
+      body: "*"
+    };
+  }
+  // 调整用户积分-奖励和惩罚都是这个接口
+  rpc UserCoinChange(UserCoinChangeRequest) returns (UserCoinChangeReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserCoin/UserCoinChange"
+      body: "*"
+    };
+  }
 }
 
-service UserGrade{
+service UserGrade {
   // 获取所有的等级信息列表
-  rpc ListGrades(ListGradesRequest)returns(ListGradesReply){}
+  rpc ListGrades(ListGradesRequest) returns (ListGradesReply) {
+    option (google.api.http) = {
+      get: "/v1/UserGrowth.UserGrade/ListGrades"
+    };
+  }
   // 获取等级的特权列表
-  rpc ListGradePrivileges(ListGradePrivilegesRequest)returns(ListGradePrivilegesReply){}
-  // 检查用户是否有某个产品的特权
-  rpc CheckUserPrivilege(CheckUserPrivilegeRequest)returns(CheckUserPrivilegeReply){}
+  rpc ListGradePrivileges(ListGradePrivilegesRequest) returns (ListGradePrivilegesReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserGrade/ListGradePrivileges"
+      body: "*"
+    };
+  }
+  // 检查用户是否有某个产品特权
+  rpc CheckUserPrivilege(CheckUserPrivilegeRequest) returns (CheckUserPrivilegeReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserGrade/CheckUserPrivilege"
+      body: "*"
+    };
+  }
   // 获取用户的等级信息
-  rpc UserGradeInfo(UserGradeInfoRequest)returns(UserGradeInfoReply){}
+  rpc UserGradeInfo(UserGradeInfoRequest) returns (UserGradeInfoReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserGrade/UserGradeInfo"
+      body: "*"
+    };
+  }
   // 调整用户的等级成长值
-  rpc UserGradeChange(UserGradeChangeRequest)returns(UserGradeChangeReply){}
+  rpc UserGradeChange(UserGradeChangeRequest) returns (UserGradeChangeReply) {
+    option (google.api.http) = {
+      post: "/v1/UserGrowth.UserGrade/UserGradeChange"
+      body: "*"
+    };
+  }
 }
-// 请求和响应消息
-message ListTaskRequest{}
-message ListTaskReply{
-  //数组
+
+message ListTasksRequest {
+}
+
+message ListTasksReply {
   repeated TbCoinTask datalist = 1;
 }
 
-message UserCoinInfoRequest{
-  int32  uid = 1;
+message UserCoinInfoRequest {
+  int32 uid = 1;
 }
-message UserCoinInfoReply{
+
+message UserCoinInfoReply {
   TbCoinUser data = 1;
 }
 
-message UserDetailsRequest{
+message UserDetailsRequest {
   int32 uid = 1;
   int32 page = 2;
   int32 size = 3;
 }
-message UserDetailsReply{
+
+message UserDetailsReply {
   repeated TbCoinDetail datalist = 1;
-  int32  total = 2;
+  int32 total = 2;
 }
 
-message UserCoinChangeRequest{
+message UserCoinChangeRequest {
   int32 uid = 1;
   string task = 2;
-  int32  coin = 3;
-}
-message UserCoinChangeReply{
-  TbCoinUser user =1;
+  int32 coin = 3;
 }
 
-message ListGradesRequest{}
-message ListGradesReply{
+message UserCoinChangeReply {
+  TbCoinUser user = 1;
+}
+
+message ListGradesRequest {
+}
+
+message ListGradesReply {
   repeated TbGradeInfo datalist = 1;
 }
 
-message ListGradePrivilegesRequest{
-  int32 grade_id =1;
+message ListGradePrivilegesRequest {
+  int32 grade_id = 1;
 }
-message ListGradePrivilegesReply{
+
+message ListGradePrivilegesReply {
   repeated TbGradePrivilege datalist = 1;
 }
 
-message CheckUserPrivilegeRequest{
-  int32  uid = 1;
+message CheckUserPrivilegeRequest {
+  int32 uid = 1;
   string product = 2;
   string function = 3;
 }
-message CheckUserPrivilegeReply{
-  bool data =1;
+
+message CheckUserPrivilegeReply {
+  bool data = 1;
 }
 
-message UserGradeInfoRequest{
-  int32  uid = 1;
-}
-message UserGradeInfoReply{
-  TbGradeUser data = 1;
-}
-
-message UserGradeChangeRequest{
+message UserGradeInfoRequest {
   int32 uid = 1;
-  int32 sore = 2;
 }
-message UserGradeChangeReply{
+
+message UserGradeInfoReply {
   TbGradeUser data = 1;
 }
 
-// 数据表模型
+message UserGradeChangeRequest {
+  int32 uid = 1;
+  int32 score = 2;
+}
+
+message UserGradeChangeReply {
+  TbGradeUser data = 1;
+}
+
 message TbCoinDetail {
   int32 id = 1;
   int32 uid = 2;

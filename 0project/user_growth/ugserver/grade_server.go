@@ -112,7 +112,7 @@ func (s *UgGradeServer) UserGradeChange(ctx context.Context, in *pb.UserGradeCha
 	log.Printf("UgGradeServer.UserGradeChangeRequest=%+v\n", *in)
 	//return nil, status.Errorf(codes.Unimplemented, "方法待实现")
 	uid := int(in.Uid)
-	score := int(in.Sore)
+	score := int(in.Score)
 	gradeUserSvc := service.NewGradeUserService(ctx)
 	gradeInfoSvc := service.NewGradeInfoService(ctx)
 	gradeUser, err := gradeUserSvc.GetByUid(uid)

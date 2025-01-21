@@ -15,7 +15,7 @@ type UgCoinServer struct {
 }
 
 // ListTasks 获取所有的积分任务列表
-func (s *UgCoinServer) ListTask(ctx context.Context, in *pb.ListTaskRequest) (*pb.ListTaskReply, error) {
+func (s *UgCoinServer) ListTasks(ctx context.Context, in *pb.ListTasksRequest) (*pb.ListTasksReply, error) {
 	log.Printf("UgCoinServer.ListTasksRequest=%+v\n", *in)
 	coinTaskSvc := service.NewCoinTaskService(ctx)
 	datalist, err := coinTaskSvc.FindAll()
@@ -26,7 +26,7 @@ func (s *UgCoinServer) ListTask(ctx context.Context, in *pb.ListTaskRequest) (*p
 	for i := range datalist {
 		dlist[i] = models.CoinTaskToMessage(&datalist[i])
 	}
-	out := &pb.ListTaskReply{
+	out := &pb.ListTasksReply{
 		Datalist: dlist,
 	}
 	return out, nil

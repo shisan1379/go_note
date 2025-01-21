@@ -1,148 +1,168 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/testdata/protoexample"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
+	"log"
 	"net/http"
 	"time"
+	"user_growth/conf"
+	"user_growth/dbhelper"
+	"user_growth/pb"
+	"user_growth/ugserver"
 )
 
 func main() {
-	router := gin.Default()
+	grpcGateway()
+}
 
-	// 此路由将匹配 /user/xxx 但不会匹配 /user/ 或 /user
-	router.GET("/user/:name", func(c *gin.Context) {
-		name := c.Param("name")
-		c.String(http.StatusOK, "Hello %s", name)
-	})
+var AllowOrigin = map[string]bool{
+	"http://a.site.com": true,
+	"http://b.site.com": true,
+	"http://web.com":    true,
+}
 
-	//此handler 将匹配 /user/xxx 和 /user/xxx/send
-	// 如果没有其他路由匹配 /user/xxx 它将重定向到上面的 /user/:name
-	router.GET("/user/:name/*action", func(c *gin.Context) {
-		name := c.Param("name")
-		action := c.Param("action")
-		message := name + " is " + action
-		c.String(http.StatusOK, message)
-	})
-
-	v1 := router.Group("/v1")
-	{
-		v1.POST("/login", func(c *gin.Context) {})
-		v1.POST("/submit", func(c *gin.Context) {})
-		v1.POST("/read", func(c *gin.Context) {})
-
-	}
-	// 全局中间件
-	// Logger 中间件将日志写入 gin.DefaultWriter 即使将 GIN_MODE 设置为 release
-	// By default gin.DefaultWriter = os.Stdout
-	router.Use(gin.Logger())
-	// Recover 中间件会 捕获任何 panic 如果发生 panic 的话会写入 500
-	router.Use(gin.Recovery())
-	// 认证路由组
-	group := router.Group("/", func(context *gin.Context) {
-		//执行认证逻辑
-	})
-
-	// 认证后才能执行
-	{
-		group.GET("/a", func(context *gin.Context) {})
-		group.GET("/a", func(context *gin.Context) {})
-		group.GET("/a", func(context *gin.Context) {})
+func mainGin() {
+	// 连接到grpc服务的客户端
+	conn, err := grpc.Dial("localhost:80", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
 	}
 
-	router.GET("/json", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{"message": "hello world", "status": http.StatusOK})
-	})
-	router.GET("/xml", func(context *gin.Context) {
-		context.XML(http.StatusOK, gin.H{"message": "hello world", "status": http.StatusOK})
-	})
-	router.GET("/yaml", func(context *gin.Context) {
-		context.YAML(http.StatusOK, gin.H{"message": "hello world", "status": http.StatusOK})
-	})
+	defer conn.Close()
 
-	router.GET("/protoBuf", func(context *gin.Context) {
+	clientCoin := pb.NewUserCoinClient(conn)
+	clientGrade := pb.NewUserGradeClient(conn)
 
-		reps := []int64{1, 2}
-		lable := "test"
-		data := &protoexample.Test{
-			Label: &lable,
-			Reps:  reps,
+	router := gin.New()
+	router.GET("/hello", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "hello")
+	})
+	// 用户积分服务的方法
+	v1Group := router.Group("/v1", func(ctx *gin.Context) {
+		// prometheus 指标
+		//MetricAdd()
+
+		// 支持跨域
+		origin := ctx.GetHeader("Origin")
+		if AllowOrigin[origin] {
+			ctx.Header("Access-Control-Allow-Origin", origin)
+			ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTION")
+			ctx.Header("Access-Control-Allow-Headers", "*")
+			ctx.Header("Access-Control-Allow-Credentials", "true")
 		}
-
-		// 数据会在响应中变为二进制数据
-		// 将输出被 protoexample.Test Protobuf 序列化了的数据
-		context.ProtoBuf(http.StatusOK, data)
+		ctx.Next()
+	})
+	gUserCoin := v1Group.Group("/UserGrowth.UserCoin")
+	gUserCoin.GET("/ListTasks", func(ctx *gin.Context) {
+		out, err := clientCoin.ListTasks(ctx, &pb.ListTasksRequest{})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"code":    2,
+				"message": err.Error(),
+			})
+		} else {
+			ctx.JSON(http.StatusOK, out)
+		}
+	})
+	gUserCoin.POST("/UserCoinChange", func(ctx *gin.Context) {
+		body := &pb.UserCoinChangeRequest{}
+		err := ctx.BindJSON(body)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"code":    2,
+				"message": err.Error(),
+			})
+		} else if out, err := clientCoin.UserCoinChange(ctx, body); err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"code":    2,
+				"message": err.Error(),
+			})
+		} else {
+			ctx.JSON(http.StatusOK, out)
+		}
+		ctx.JSON(http.StatusOK, nil)
+	})
+	// 用户等级服务的方法
+	gUserGrade := v1Group.Group("/UserGrowth.UserGrade")
+	gUserGrade.GET("/ListGrades", func(ctx *gin.Context) {
+		out, err := clientGrade.ListGrades(ctx, &pb.ListGradesRequest{})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"code":    2,
+				"message": err.Error(),
+			})
+		} else {
+			ctx.JSON(http.StatusOK, out)
+		}
 	})
 
-	router.GET("/html", func(context *gin.Context) {
-		context.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"title": "hello world",
-		})
-	})
+	// prometheus client Create non-global registry.
+	//MetricInit(router)
 
+	// 为http/2配置参数
+	h2Handler := h2c.NewHandler(router, &http2.Server{})
+	// 配置http服务
 	server := &http.Server{
-		Addr:           ":8080",
-		Handler:        router,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		Addr:    ":8080",
+		Handler: h2Handler,
 	}
-
+	// 启动http服务
 	server.ListenAndServe()
 }
-func cookie() {
-	// 创建一个默认的 Gin 引擎
-	r := gin.Default()
+func initDb() {
+	// default UTC time location
+	time.Local = time.UTC
+	// Load global config
+	conf.LoadConfigs()
+	// Initialize db
+	dbhelper.InitDb()
+}
+func grpcGateway() {
+	// 初始化数据库实例
+	initDb()
 
-	// 定义一个路由用于获取 Cookie
-	r.GET("/getcookie", func(c *gin.Context) {
-		// 尝试从请求中获取名为 "my_cookie" 的 Cookie
-		cookie, err := c.Cookie("my_cookie")
-		if err != nil {
-			// 如果找不到 Cookie，则返回错误响应
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Cookie not found"})
-			return
-		}
-		// 如果找到了 Cookie，则返回其值
-		c.JSON(http.StatusOK, gin.H{"cookie_value": cookie})
-	})
+	s := grpc.NewServer()
+	//注册服务
+	pb.RegisterUserCoinServer(s, &ugserver.UgCoinServer{})   //用户积分
+	pb.RegisterUserGradeServer(s, &ugserver.UgGradeServer{}) //用户等级
 
-	// 定义一个路由用于设置 Cookie
-	r.GET("/setcookie", func(c *gin.Context) {
-		// 创建一个新的 Cookie 对象
-		cookie := &http.Cookie{
-			Name:     "my_cookie",  // Cookie 的名称
-			Value:    "some_value", // Cookie 的值
-			MaxAge:   60,           // Cookie 的有效期（秒）
-			Path:     "/",          // Cookie 的路径
-			Domain:   "",           // Cookie 的域名（留空表示当前域名）
-			Secure:   false,        // 是否仅通过 HTTPS 发送 Cookie（false 表示不限制）
-			HttpOnly: true,         // 是否仅通过 HTTP/HTTPS 协议访问（true 表示不能通过 JavaScript 访问）
-		}
-		// 将 Cookie 添加到响应中
-		http.SetCookie(c.Writer, cookie)
-		// 返回成功响应
-		c.JSON(http.StatusOK, gin.H{"message": "Cookie set successfully"})
-	})
+	//grpc gateway
+	mux := runtime.NewServeMux()
+	ctx := context.Background()
+	err := pb.RegisterUserCoinHandlerServer(ctx, mux, &ugserver.UgCoinServer{})
+	if err != nil {
+		log.Printf("failed to register UgCoinServer: %v", err)
+	}
 
-	// 定义一个路由用于删除 Cookie
-	r.GET("/deletecookie", func(c *gin.Context) {
-		// 创建一个用于删除的 Cookie 对象（通过设置 MaxAge 为 -1）
-		cookie := &http.Cookie{
-			Name:     "my_cookie",
-			Value:    "", // 值可以留空，因为 MaxAge 为 -1 会导致浏览器删除这个 Cookie
-			MaxAge:   -1, // 负值表示删除 Cookie
-			Path:     "/",
-			Domain:   "",
-			Secure:   false,
-			HttpOnly: true,
-		}
-		// 将删除 Cookie 的指令添加到响应中
-		http.SetCookie(c.Writer, cookie)
-		// 返回成功响应
-		c.JSON(http.StatusOK, gin.H{"message": "Cookie deleted successfully"})
-	})
+	err = pb.RegisterUserGradeHandlerServer(ctx, mux, &ugserver.UgGradeServer{})
+	if err != nil {
+		log.Printf("failed to register UgGradeServer: %v", err)
+	}
 
-	// 启动 Gin 引擎并监听端口 8080
-	r.Run(":8080")
+	reflection.Register(s)
+
+	httpMux := http.NewServeMux()
+	httpMux.Handle("/v1/UserGrowth", mux)
+
+	server := &http.Server{
+		Addr: ":8081",
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Printf("http.HandlerFunc url=%s", r.URL)
+			mux.ServeHTTP(w, r)
+		}),
+	}
+
+	//启动服务
+	log.Printf("服务启动中 %v\n", server.Addr)
+	err = server.ListenAndServe()
+	if err != nil {
+		log.Fatalf("failed to listen and serve %v", err)
+	}
 }

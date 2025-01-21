@@ -2,6 +2,7 @@ package main
 
 import (
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"time"
@@ -34,11 +35,12 @@ func main() {
 	pb.RegisterUserCoinServer(s, &ugserver.UgCoinServer{})   //用户积分
 	pb.RegisterUserGradeServer(s, &ugserver.UgGradeServer{}) //用户等级
 
+	reflection.Register(s)
+
 	//启动服务
 	log.Printf("服务启动中 %v\n", listen.Addr())
 	err = s.Serve(listen)
 	if err != nil {
 		log.Fatal("服务启动失败：%v\n", err)
 	}
-
 }
