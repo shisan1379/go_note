@@ -7,10 +7,11 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"log"
+	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 
-	//v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -20,7 +21,7 @@ import (
 func main() {
 	router := gin.New()
 	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, getClusterIp()+"hello")
+		ctx.String(http.StatusOK, getClusterIp()+" "+getDNS()+" : hello")
 	})
 
 	// 为http/2配置参数
@@ -34,6 +35,20 @@ func main() {
 	server.ListenAndServe()
 }
 func getClusterIp() string {
+	// 从环境变量中获取 ClusterIP 和端口
+	serviceHost := os.Getenv("MY_SERVICE_SERVICE_HOST")
+	servicePort := os.Getenv("MY_SERVICE_SERVICE_PORT")
+
+	if serviceHost == "" || servicePort == "" {
+		fmt.Println("无法获取 Service 的 ClusterIP 或端口")
+		return "0---"
+	}
+
+	fmt.Printf("Service 的 ClusterIP: %s\n", serviceHost)
+	fmt.Printf("Service 的端口: %s\n", servicePort)
+	return serviceHost
+}
+func getClusterIp2() string {
 	// 加载 kubeconfig 文件
 	var kubeconfig string
 	if home := homedir.HomeDir(); home != "" {
@@ -66,4 +81,15 @@ func getClusterIp() string {
 	fmt.Printf("Service %s 的 ClusterIP: %s\n", serviceName, service.Spec.ClusterIP)
 
 	return service.Spec.ClusterIP
+}
+func getDNS() string {
+	serviceName := "myapp.default.svc.cluster.local"
+	addrs, err := net.LookupHost(serviceName)
+	if err != nil {
+		log.Fatalf("Failed to resolve %s: %v", serviceName, err)
+	}
+
+	clusterIP := addrs[0]
+
+	return clusterIP
 }

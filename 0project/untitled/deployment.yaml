@@ -9,7 +9,7 @@ metadata:
 # Deployment的规格说明
 spec:
   # 指定要运行的Pod副本数量
-  replicas: 2
+  replicas: 1
   # 用于选择哪些Pod应该被该Deployment管理
   selector:
     # 使用标签选择器来匹配Pod
@@ -38,7 +38,6 @@ spec:
           ports:
             # 定义一个端口
             - containerPort: 8080  # 容器内部监听的端口号
-
 # 注意事项：
 # - 确保镜像名称和标签正确无误，并且镜像已经存在于指定的仓库中（如果不是本地仓库）。
 # - 如果使用本地仓库（如Minikube的Docker守护进程），请确保Kubernetes集群可以访问该仓库。
