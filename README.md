@@ -94,6 +94,8 @@ Go 语言学习笔记
 - [gin框架使用](6.k8sgrpc云原生实战/12.gin框架使用.md)
 - [k8s服务发现和负载均衡](6.k8sgrpc云原生实战/13.k8s服务发现和负载均衡.md)
 
+- [k8sPod生成](6.k8sgrpc云原生实战/14.k8sPod生成.md)
+
 
   
 # docker学习
