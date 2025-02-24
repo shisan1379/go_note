@@ -8,14 +8,14 @@ import (
 
 // GradeUserService service for knowledge article
 type GradeUserService struct {
-	cxt         context.Context
+	cxt          context.Context
 	daoGradeUser *dao.GradeUserDao
 }
 
 // NewGradeUserService new instance of GradeUserService
 func NewGradeUserService(ctx context.Context) *GradeUserService {
 	return &GradeUserService{
-		cxt:         ctx,
+		cxt:          ctx,
 		daoGradeUser: dao.NewGradeUserDao(ctx),
 	}
 }
