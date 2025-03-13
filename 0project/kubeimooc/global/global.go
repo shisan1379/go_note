@@ -1,7 +1,12 @@
 package global
 
-import "kubeimooc/config"
+import (
+	"k8s.io/client-go/kubernetes"
+	"kubeimooc/config"
+)
 
 var (
-	CONF config.Server
+	//配置文件
+	CONF          config.Server
+	KubeConfigSet *kubernetes.Clientset
 )

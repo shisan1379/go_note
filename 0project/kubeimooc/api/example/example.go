@@ -1,13 +1,17 @@
 package example
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"kubeimooc/response"
+)
 
 type ExampleApi struct {
 }
 
 func (*ExampleApi) ExampleTest(c *gin.Context) {
 
-	c.JSON(200, gin.H{
+	response.SuccessWithDetailed(c, "请求数据成功", map[string]string{
 		"message": "pong",
 	})
+
 }
