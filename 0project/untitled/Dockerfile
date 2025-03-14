@@ -15,6 +15,7 @@ RUN go mod download
 # 复制源码并构建
 COPY . .
 # 将 . 目录下代码编译为 aaa 执行文件
+# 通过 env 或者直接设置环境变量，都是可以对go程序起到效果的
 RUN CGO_ENABLED=0 GOOS=linux go build -o aaa .
 
 # 第二层镜像，作为运行层
