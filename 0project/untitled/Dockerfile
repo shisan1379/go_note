@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 # 设置环境变量 GOPROXY
 ENV GOPROXY=https://goproxy.cn,direct
 # 下载go依赖
-RUN go mod download
+RUN go mod tidy
 
 # 复制源码并构建
 COPY . .
