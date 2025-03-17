@@ -157,3 +157,4 @@ Go 语言学习笔记
 - [K8S架构设计](9.K8S集群可视化/2.K8S架构设计.md)
 - [harbor](9.K8S集群可视化/3.harbor.md)
 - [kind](9.K8S集群可视化/3.kind.md)
+- [gogs](9.K8S集群可视化/4.gogs.md)
