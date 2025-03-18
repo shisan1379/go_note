@@ -1,0 +1,27 @@
+
+
+# 一个简单的pod
+# 指定 API 版本，v1 是 Kubernetes 核心 API 的版本，包含了如 Pod、Service 等基本资源的定义
+apiVersion: v1
+# 指定资源的类型，这里创建的资源类型是 Pod
+kind: Pod
+
+# 元数据部分，包含了该 Pod 的一些标识信息
+metadata:
+  # Pod 的名称，在同一命名空间下必须唯一
+  name: busybox
+  # Pod 所属的命名空间，这里指定为 test 命名空间
+  namespace: test
+  # 标签，用于对资源进行分类和选择，可用于后续的选择器查询等操作
+  labels:
+    # 自定义的标签键值对，这里使用 app 作为键，busybox 作为值，可用于标识该 Pod 所属的应用
+    app: busybox
+
+# Pod 的规格部分，定义了 Pod 中容器的具体配置
+spec:
+  # 容器列表，可包含一个或多个容器，这里只有一个名为 busybox 的容器
+  containers:
+    - # 容器的名称
+    - name: busybox
+      # 容器使用的镜像，这里使用 busybox 镜像，它是一个精简的 Linux 工具集镜像
+      image: busybox

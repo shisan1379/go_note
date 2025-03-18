@@ -153,8 +153,17 @@ Go 语言学习笔记
 
 ## K8S集群初始化
 
+基础环境搭建
+
 - [K8S适用场景](9.K8S集群可视化/1.K8S适用场景.md)
 - [K8S架构设计](9.K8S集群可视化/2.K8S架构设计.md)
 - [harbor](9.K8S集群可视化/3.harbor.md)
 - [kind](9.K8S集群可视化/3.kind.md)
 - [gogs](9.K8S集群可视化/4.gogs.md)
+
+- [kubectl使用](9.K8S集群可视化/4.1kubectl使用.md)
+理论基础
+
+- [pod参数详解](9.K8S集群可视化/5.pod参数详解.md)
+
+

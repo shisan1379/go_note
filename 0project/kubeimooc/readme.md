@@ -19,7 +19,7 @@ gin github 主页
 go get github.com/spf13/viper
 ```
 
-# k8s继承
+# k8s客户端库
 
 
 ```shell
