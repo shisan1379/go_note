@@ -7,20 +7,20 @@ kind: Pod
 # 元数据部分，包含了该 Pod 的一些标识信息
 metadata:
   # Pod 的名称，在同一命名空间下必须唯一
-  name: busybox
+  name: nginx
   # Pod 所属的命名空间，这里指定为 test 命名空间
   namespace: test
   # 标签，用于对资源进行分类和选择，可用于后续的选择器查询等操作
   labels:
-    # 自定义的标签键值对，这里使用 app 作为键，busybox 作为值，可用于标识该 Pod 所属的应用
-    app: busybox
+    # 自定义的标签键值对，这里使用 app 作为键，nginx 作为值，可用于标识该 Pod 所属的应用
+    app: nginx
 
 # Pod 的规格部分，定义了 Pod 中容器的具体配置
 spec:
   # 当设置为 true 时，该 Pod 将使用宿主机的网络命名空间。
   # 这意味着 Pod 内的容器会直接使用宿主机的网络接口，与宿主机共享 IP 地址和端口空间。
   # 通常用于需要直接访问宿主机网络或需要特殊网络配置的场景，但会牺牲一定的网络隔离性。
-  hostNetwork: true
+  hostNetwork: false
   # dnsPolicy 用于指定 Pod 的 DNS 解析策略，可选值有：
   # - Default: 使用宿主机的 DNS 配置，即直接沿用宿主机的 /etc/resolv.conf 文件中的配置。
   # - ClusterFirst: 优先使用 Kubernetes 集群内的 DNS 服务（通常是 CoreDNS）进行解析，如果解析失败，再尝试使用宿主机的 DNS 配置。
@@ -39,49 +39,20 @@ spec:
   # 这类似于在宿主机的 /etc/hosts 文件中添加条目。这样做可以让容器在不依赖 DNS 解析的情况下，
   # 直接通过域名访问指定的 IP 地址，常用于测试环境或者需要快速修改域名解析的场景。
   hostAliases:
-    - ip: 192.168.144.142
+    - ip: 192.168.144.143
       hostnames:
         - "foo.local"
         - "bar.local"
-  # 容器列表，可包含一个或多个容器，这里只有一个名为 busybox 的容器
+  # 容器列表，可包含一个或多个容器，这里只有一个名为 nginx 的容器
   containers:
     # 容器的名称
-    - name: busybox
-      # 容器使用的镜像，这里使用 busybox 镜像，它是一个精简的 Linux 工具集镜像
-      image: busybox
+    - name: nginx
+      # 容器使用的镜像，这里使用 nginx 镜像，它是一个精简的 Linux 工具集镜像
+      image: nginx
       # 镜像拉取策略，IfNotPresent 表示只有当本地不存在该镜像时才会去拉取
       imagePullPolicy: IfNotPresent
-      # 为容器设置环境变量
-      env:
-        # 定义一个名为 app 的环境变量，其值为 busybox
-        - name: app
-          value: busybox
-      # 分配一个伪终端给容器，类似于在本地使用终端操作
-      tty: true
-      # 安全上下文设置
-      securityContext:
-        # 将容器设置为特权模式，可获得更多的系统权限，但也存在一定安全风险
-        privileged: true
-      # 设置容器内的工作目录，容器启动后将进入该目录
-      workingDir: /test
-      # 容器启动时执行的命令
-      command: ["/bin/sh"]
-      # 传递给命令的参数
-      # 这里的参数是一个无限循环脚本，每隔 10 秒打印一次 hello
-      args: ["-c", "while true; do echo hello; sleep 10; done"]
-
-      # 资源请求和限制配置部分，用于定义容器对集群资源（CPU和内存）的使用规则
-      resources:
-        # 资源请求部分，告知Kubernetes在调度时为容器预留的最小资源量
-        requests:
-          # 容器请求100MiB（Mebibyte）的内存资源。Kubernetes会确保在调度该容器时，为其分配至少100MiB的内存
-          memory: "100Mi"
-          # 容器请求1000m（毫核）的CPU资源。这里的m代表毫核，1000m即1个完整的CPU核心。Kubernetes会保证该容器至少能获得1个CPU核心的计算资源
-          cpu: "1000m"
-        # 资源限制部分，定义了容器最多可以使用的资源量
-        limits:
-          # 限制容器最多使用200MiB的内存。如果容器试图使用超过200MiB的内存，可能会被Kubernetes终止或限制
-          memory: "200Mi"
-          # 限制容器最多使用1000m（1个完整的CPU核心）的CPU资源。如果容器的CPU使用率超过这个限制，Kubernetes会对其进行限流
-          cpu: "1000m"
-
+      ports:
+        - name: "default"
+          containerPort: 80
+          #如果使用 hostNetwork 这里就不能指定端口
+          hostPort: 8080
