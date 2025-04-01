@@ -1,6 +1,6 @@
 # 声明使用的Kubernetes API版本和资源类型
 apiVersion: apps/v1
-# 指定这是一个Deployment资源
+# 指定这是一个资源
 kind: Deployment
 # Deployment资源的元数据
 metadata:
