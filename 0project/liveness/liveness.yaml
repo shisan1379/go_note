@@ -1,0 +1,26 @@
+
+apiVersion: v1
+kind: Pod
+
+metadata:
+  labels:
+    app: liveness
+  name: liveness
+  namespace: default
+
+# Pod 的规格部分，定义了 Pod 中容器的具体配置
+spec:
+  containers:
+    - name: liveness
+      image: liveness:latest
+      # 每隔3秒向容器探测，是否正常
+      startupProbe:
+        httpGet:
+          port: 8080
+          path: /stared
+          httpHeaders:
+            - name: Custom-Header
+              value: Awesome
+        failureThreshold: 3
+        periodSeconds: 3
+

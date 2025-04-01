@@ -29,12 +29,12 @@ spec:
   dnsPolicy: "Default"
   # dnsConfig 用于手动配置 Pod 的 DNS 解析信息，当 dnsPolicy 设置为 None 时必须使用，
   # 也可以在其他策略下用于覆盖或补充默认的 DNS 配置。
-#  dnsConfig:
+  dnsConfig:
     # nameservers 字段指定了用于 DNS 解析的服务器 IP 地址列表。
     # Pod 内的容器在进行 DNS 解析时，会按照列表中的顺序依次尝试这些 DNS 服务器。
     # 这里指定了 Google 的公共 DNS 服务器 8.8.8.8，意味着该 Pod 会优先使用这个 DNS 服务器进行域名解析。
-#    nameservers:
-#      - 8.8.8.8
+    nameservers:
+      - 8.8.8.8
   # 域名映射：通过 hostAliases 字段可以为 Pod 内的容器提供额外的域名与 IP 地址的映射关系，
   # 这类似于在宿主机的 /etc/hosts 文件中添加条目。这样做可以让容器在不依赖 DNS 解析的情况下，
   # 直接通过域名访问指定的 IP 地址，常用于测试环境或者需要快速修改域名解析的场景。
