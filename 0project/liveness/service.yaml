@@ -1,0 +1,12 @@
+apiVersion: v1        # 指定 Kubernetes API 版本，这里是核心 API 组的 v1 版本
+kind: Service         # 指定这是一个 Service 对象
+metadata:
+  name: liveness         # Service 的名称
+spec:
+  type: NodePort      # Service 的类型，NodePort 类型允许从集群外部访问 Service
+  ports:
+    - port: 8080      # Service 暴露在集群内部的端口
+      targetPort: 8080 # 流量将被转发到的后端 Pod 的端口
+      nodePort: 30007 # 在每个节点上暴露的静态端口，用于从集群外部访问 Service
+  selector:           # 用于选择哪些 Pod 将被这个 Service 暴露
+    app: liveness        # 标签选择器，匹配具有 app=myapp 标签的 Pod

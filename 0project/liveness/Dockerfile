@@ -9,10 +9,10 @@ WORKDIR /go/src
 COPY . .
 
 # 设置环境变量 GOPROXY
-ENV GOPROXY=https://goproxy.cn,direct
+# ENV GOPROXY=https://goproxy.cn,direct
 # 下载go依赖
 RUN go mod download
-# 将 . 目录下代码编译为 aaa 执行文件
+# 将 . 目录下代码编译为 server 执行文件
 RUN CGO_ENABLED=0 GOOS=linux go build -o server .
 
 # 使用 alpine:latest 作为基础镜像，这个阶段用于创建最终的运行镜像

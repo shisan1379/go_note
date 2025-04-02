@@ -13,6 +13,8 @@ spec:
   containers:
     - name: liveness
       image: liveness:latest
+      # 镜像拉取策略
+      imagePullPolicy: IfNotPresent  # 如果镜像已经存在于节点上，则不尝试从远程仓库拉取
       # 每隔3秒向容器探测，是否正常
       startupProbe:
         httpGet:
