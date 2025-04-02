@@ -10,6 +10,8 @@ metadata:
 
 # Pod 的规格部分，定义了 Pod 中容器的具体配置
 spec:
+  imagePullSecrets:
+    - name: regcred
   containers:
     - name: liveness
       image: liveness:latest
