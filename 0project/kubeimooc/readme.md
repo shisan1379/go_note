@@ -26,3 +26,16 @@ go get github.com/spf13/viper
 go get k8s.io/client-go@latest
 ```
 <https://github.com/kubernetes/client-go>
+
+
+## 项目接口开发
+
+### pod管理接口开发
+
+
+- 命名空间列表接口
+  - 命名空间创建 - 不做
+- Pod创建
+- Pod查看（详情、列表）
+- Pod编辑（更新/升级）
+- Pod删除
