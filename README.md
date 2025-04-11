@@ -162,8 +162,16 @@ Go 语言学习笔记
 - [gogs](9.K8S集群可视化/4.gogs.md)
 
 - [kubectl使用](9.K8S集群可视化/4.1kubectl使用.md)
+
+
 理论基础
 
 - [pod参数详解](9.K8S集群可视化/5.pod参数详解.md)
 
+
+# 马士兵云原生架构师
+
+
+
+- [containerd](10.马士兵云原生架构师/1.containerd架构.md)
 
