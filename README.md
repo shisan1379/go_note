@@ -179,3 +179,9 @@ Go 语言学习笔记
 
 - [containerd](10.马士兵云原生架构师/1.containerd架构.md)
 
+- [kubectl使用](10.马士兵云原生架构师/2.kubectl使用.md)
+
+- [YAML](10.马士兵云原生架构师/3.YAML.md)
+
+
+
