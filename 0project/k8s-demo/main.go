@@ -24,6 +24,16 @@ func main() {
 		ctx.String(http.StatusOK, getClusterIp()+" "+getDNS()+" : hello")
 	})
 
+	router.GET("/healthz", func(ctx *gin.Context) {
+		fmt.Println("healthz")
+		ctx.String(http.StatusOK, "ok")
+	})
+
+	router.GET("/notify", func(ctx *gin.Context) {
+		fmt.Println("notify")
+		ctx.String(http.StatusOK, "ok")
+	})
+
 	// 为http/2配置参数
 	h2Handler := h2c.NewHandler(router, &http2.Server{})
 	// 配置http服务

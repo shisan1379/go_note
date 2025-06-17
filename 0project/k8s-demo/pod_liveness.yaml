@@ -1,0 +1,52 @@
+
+
+# 声明使用的Kubernetes API版本和资源类型
+apiVersion: apps/v1
+# 指定这是一个资源
+kind: Deployment
+# Deployment资源的元数据
+metadata:
+  # Deployment的名称，用于标识和引用
+  name: myapp
+# Deployment的规格说明
+spec:
+  # 指定要运行的Pod副本数量
+  replicas: 1
+  # 用于选择哪些Pod应该被该Deployment管理
+  selector:
+    # 使用标签选择器来匹配Pod
+    matchLabels:
+      # 定义一个标签，其键为app，值为myapp
+      app: myapp
+  # Pod模板，用于创建新的Pod实例
+  template:
+    # Pod的元数据
+    metadata:
+      # Pod的标签，用于组织和选择Pod
+      labels:
+        # 定义一个标签，其键为app，值为myapp，与上面的选择器匹配
+        app: myapp
+    # Pod的规格说明
+    spec:
+      # Pod中容器的列表
+      containers:
+        # 定义一个容器
+        - name: myapp  # 容器的名称，用于标识和引用
+          # 容器使用的镜像，格式为[仓库名]:[标签]
+          image: myapp:latest  # 这里假设是本地构建的镜像或者已经推送到私有仓库的镜像
+          # 镜像拉取策略
+          imagePullPolicy: IfNotPresent  # 如果镜像已经存在于节点上，则不尝试从远程仓库拉取
+
+          # 容器暴露的端口列表
+          ports:
+            # 定义一个端口
+            - containerPort: 8080  # 容器内部监听的端口号
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: Custom-Header
+                  value: Awesome
+
+
