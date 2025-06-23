@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment        # Deployment名称
+  labels:
+    app: nginx
+spec:
+  replicas: 1                   # 希望运行的 Pod 副本数量
+  selector:
+    matchLabels:
+      app: nginx                # 用于选择它管理的 Pod 的标签
+  template:
+    metadata:
+      labels:
+        app: nginx              # Pod 的标签，必须与 selector.matchLabels 匹配
+      # Pod的规格说明
+    spec:
+      containers:
+        - name: nginx-container
+#          image: nginx:latest     # 使用的容器镜像
+          image: nginx:1.15-alpine
+          ports:
+            - containerPort: 80     # 容器暴露的端口
