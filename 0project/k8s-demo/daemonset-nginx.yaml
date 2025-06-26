@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: daemonset-nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx-ds
+  template:
+    metadata:
+      labels:
+        app: nginx-ds
+    spec:
+
+      # 容忍声明
+      # 污点的作用
+      # 1. 防止普通Pod调度到特定节点
+      # 2. 保留专用节点给特定的服务使用
+      # 3. 实现节点的隔离和维护管理
+      tolerations:
+        # 能容忍的污点key
+        - key: node-role.kubernetes.io/master
+          # 污点效果
+          # NoSchedule - 不容忍的Pod不会被调度到该节点
+          # PreferNoSchedule - 尽量不调度到该节点(软限制)
+          # NoExecute - 不容忍的Pod不会被调度，已运行的会被驱逐
+          effect: NoSchedule
+      containers:
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 100Mi
+            requests:
+              memory: 100Mi
