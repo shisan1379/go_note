@@ -1,13 +1,52 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: title
+  name: nginx
+  labels:
+    app: nginx
 spec:
   selector:
-    app: title
+    app: nginx
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 8080
-  type: NodePort
-  
+#      nodePort: 30007 # 在每个节点上暴露的静态端口，用于从集群外部访问 Service
+      name: web
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  serviceName: nginx
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent  # 如果镜像已经存在于节点上，则不尝试从远程仓库拉取
+          ports:
+            - containerPort: 80
+              name: web
+          volumeMounts:
+            - name: ww
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+    - metadata:
+        name: ww
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: "1Gi"
+
+
