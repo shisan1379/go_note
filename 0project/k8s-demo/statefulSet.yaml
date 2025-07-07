@@ -5,11 +5,12 @@ metadata:
   labels:
     app: nginx
 spec:
+#  type: NodePort      # Service 的类型，NodePort 类型允许从集群外部访问 Service
   selector:
     app: nginx
   ports:
     - port: 80
-      targetPort: 8080
+#      targetPort: 80
 #      nodePort: 30007 # 在每个节点上暴露的静态端口，用于从集群外部访问 Service
       name: web
   clusterIP: None

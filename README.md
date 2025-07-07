@@ -185,5 +185,9 @@ Go 语言学习笔记
 
 - [Kubernetes核心概念](10.马士兵云原生架构师/4.Kubernetes核心概念.md)
 
+- [pod](10.马士兵云原生架构师/5.pod.md)
+
+- [Controller](10.马士兵云原生架构师/6.Controller.md)
+
 
 
