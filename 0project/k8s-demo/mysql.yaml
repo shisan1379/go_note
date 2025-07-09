@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-test
+  namespace: default
+spec:
+  ports:
+    - port: 3306
+      name: mysql
+  clusterIP: None
+  selector:
+    app: mysql-dump
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: mysql-dump
+  serviceName: mysql-test
+  template:
+    metadata:
+      labels:
+        app: mysql-dump
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: abc123
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - mountPath: "/var/lib/mysql"
+              name: mysql-date
+      volumes:
+        - name: mysql-data
+          hostPath:
+            path: /opt/mysqldata
+
+
