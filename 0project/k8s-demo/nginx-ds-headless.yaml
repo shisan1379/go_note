@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment        # Deployment名称
+  labels:
+    app: nginx-deployment
+spec:
+  replicas: 2                   # 希望运行的 Pod 副本数量
+  selector:
+    matchLabels:
+      app: nginx-deployment                # 用于选择它管理的 Pod 的标签
+  template:
+    metadata:
+      labels:
+        app: nginx-deployment              # Pod 的标签，必须与 selector.matchLabels 匹配
+      # Pod的规格说明
+    spec:
+      containers:
+        - name: nginx-container
+          #          image: nginx:latest     # 使用的容器镜像
+          image: nginx:1.15-alpine
+          ports:
+            - containerPort: 80     # 容器暴露的端口
+---
+apiVersion: v1        # 指定 Kubernetes API 版本，这里是核心 API 组的 v1 版本
+kind: Service         # 指定这是一个 Service 对象
+metadata:
+  name: nginx-deployment-service         # Service 的名称
+spec:
+  type: ClusterIP      # 集群内部访问的 Service 类型
+  clusterIP: None      # None 无头服务（不分配 ClusterIP，直接访问 Pod）
+  ports:
+    - port: 80      # Service 暴露在集群内部的端口
+      targetPort: 80 # 流量将被转发到的后端 Pod 的端口
+#      nodePort: 30007 # 在每个节点上暴露的静态端口，用于从集群外部访问 Service
+  selector:           # 用于选择哪些 Pod 将被这个 Service 暴露
+    app: nginx-deployment        # 标签选择器，匹配具有 app=myapp 标签的 Pod

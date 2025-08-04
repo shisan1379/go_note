@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment        # Deployment名称
+  labels:
+    app: nginx-deployment
+spec:
+  replicas: 2                   # 希望运行的 Pod 副本数量
+  selector:
+    matchLabels:
+      app: nginx-deployment                # 用于选择它管理的 Pod 的标签
+  template:
+    metadata:
+      labels:
+        app: nginx-deployment              # Pod 的标签，必须与 selector.matchLabels 匹配
+      # Pod的规格说明
+    spec:
+      containers:
+        - name: nginx-container
+          #          image: nginx:latest     # 使用的容器镜像
+          image: nginx:1.15-alpine
+          ports:
+            - containerPort: 80     # 容器暴露的端口
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-deployment  # 集群内的服务名称
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: www.baidu.com  # 外部数据库的实际域名
