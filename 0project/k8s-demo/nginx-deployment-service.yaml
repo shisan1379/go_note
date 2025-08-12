@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment        # Deployment名称
+  namespace: ingress-nginx
   labels:
     app: nginx-deployment
 spec:
-  replicas: 1                   # 希望运行的 Pod 副本数量
+  replicas: 2                   # 希望运行的 Pod 副本数量
   selector:
     matchLabels:
       app: nginx-deployment                # 用于选择它管理的 Pod 的标签
@@ -40,7 +41,8 @@ spec:
 apiVersion: v1        # 指定 Kubernetes API 版本，这里是核心 API 组的 v1 版本
 kind: Service         # 指定这是一个 Service 对象
 metadata:
-  name: nginx-deployment-service         # Service 的名称
+  name: ingress-nginx         # Service 的名称
+  namespace: ingress-nginx
 spec:
   type: ClusterIP      # Service 的类型，NodePort 类型允许从集群外部访问 Service
   ports:
@@ -49,3 +51,26 @@ spec:
 #      nodePort: 30007 # 在每个节点上暴露的静态端口，用于从集群外部访问 Service
   selector:           # 用于选择哪些 Pod 将被这个 Service 暴露
     app: nginx-deployment        # 标签选择器，匹配具有 app=myapp 标签的 Pod
+
+---
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: ingress
+##  namespace: ingress-nginx
+#  annotations:
+#    ingressclass.kubernetes.io/is-default-class: "true"
+#    kubernetes.io/ingress.class: nginx
+#spec:
+#  ingressClassName: nginx
+#  rules:
+#    - host: my-nginx-test.com
+#      http:
+#        paths:
+#          - backend:
+#              service:
+#                name: nginx-deployment-service
+#                port:
+#                  number: 80
+#            pathType: Prefix
+#            path: "/"
