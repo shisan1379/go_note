@@ -191,7 +191,7 @@ Go 语言学习笔记
 
 - [Service](10.马士兵云原生架构师/7.Service.md)
 - [Ingress-nginx](10.马士兵云原生架构师/8.Ingress.md)
-- - [Ingress-Traefik](10.马士兵云原生架构师/9.Ingress-Traefik.md)
+- [Ingress-Traefik](10.马士兵云原生架构师/9.Ingress-Traefik.md)
 
 
 
