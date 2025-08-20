@@ -1,0 +1,54 @@
+# UDP
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: whoamiudp
+  namespace: default
+  labels:
+    app: traefiklabs
+    name: whoamiudp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: traefiklabs
+      task: whoamiudp
+  template:
+    spec:
+      containers:
+        - name: whoamiudp
+          image: traefik/whamiudp
+          ports:
+            - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: whoamiudp
+  namespace: default
+spec:
+  ports:
+    - port: 8080
+      protocol: UDP
+  selector:
+    app: traefiklabs
+    task: whoamiudp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
