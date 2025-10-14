@@ -1,0 +1,14 @@
+# 配置 TraefikService 实现权重轮询
+apiVersion: traefik.io/v1alpha1
+kind: TraefikService
+metadata:
+  name: mirror
+  namespace: default
+spec:
+  mirroring:
+    name: whoami-v1-svc  # 发送100% 的请求到  v1
+    port: 80
+    mirrors:
+      - name: whoami-v2-svc   # 复制 20% 的流量到 v2
+        port: 80
+        percent: 20

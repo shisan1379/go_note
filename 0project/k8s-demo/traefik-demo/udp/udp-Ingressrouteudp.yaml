@@ -1,0 +1,14 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: ingressrouteudpfoo
+  namespace: default
+spec:
+  entryPoints:
+    - myudp  # The entry point where Traefik listens for incoming traffic.
+  routes:
+    - services:
+        - name: whoamiudp-svc # The name of the Kubernetes Service to route to.
+          port: 8080
+#          weight: 10
+#          nativeLB: true # Enables native load balancing between pods.

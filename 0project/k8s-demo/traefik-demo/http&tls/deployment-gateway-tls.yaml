@@ -1,0 +1,25 @@
+
+# Gateway
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whoami
+  namespace: traefik
+spec:
+  # 父引用，指定该路由关联的网关
+  parentRefs:
+    - name: traefik-gateway  # 关联的网关名称，这里是 Traefik 自动创建的网关
+      sectionName: websecure # The HTTPS listener
+  # 主机名列表，该路由匹配的域名
+  hostnames:
+    - "whoami.com"  # 当请求的主机名为该值时，应用此路由规则
+  # 路由规则列表，定义请求的匹配条件和对应的后端服务
+  rules:
+    - matches:  # 匹配条件，定义哪些请求会被该规则处理
+        - path:    # 路径匹配配置
+            type: PathPrefix  # 匹配类型，PathPrefix 表示前缀匹配
+            value: /          # 匹配的路径前缀，这里匹配所有路径
+      # 后端引用，指定匹配规则的请求要转发到的后端服务
+      backendRefs:
+        - name: whoami  # 后端服务的名称
+          port: 80      # 后端服务的端口号

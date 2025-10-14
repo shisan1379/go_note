@@ -1,0 +1,40 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: ingressroutetcp-whoamitcp
+  namespace: default
+
+spec:
+  entryPoints:
+    - web2
+  routes:
+    - match: HostSNI(`*`)
+      priority: 10
+      services:
+        - name: whoamitcp
+          port: 3000
+
+#  tls:
+#     指定存储 TLS 证书和私钥的 Kubernetes Secret 名称。
+#     Traefik 会从当前命名空间中名为 'supersecret' 的 Secret 加载证书。
+#    secretName: supersecret
+  # 引用一个预定义的 TLSOption 自定义资源，以配置更精细的 TLS 参数
+  #（如最小协议版本、密码套件等）。
+#    options:
+  # 引用的 TLSOption 资源的名称。
+#      name: opt
+# TLSOption 资源所在的命名空间。
+#      namespace: default
+
+  # 指定用于自动申请和管理证书的证书解析器（Certificate Resolver）的名称。
+  # 这通常与 Let's Encrypt 等 ACME CA 集成相关，用于自动签发证书。
+#    certResolver: foo
+#    domains:
+#      - main: example.net
+#        sans:
+#          - a.example.net
+#          - b.example.net
+  # 控制 TLS 终止模式。
+  # 当设置为 false（默认值）时，表示由 Traefik 终止 TLS 连接（解密流量后转发至后端服务）。
+  # 当设置为 true 时，表示 Traefik 将不对流量进行解密，而是将加密的 TLS 流量直接透传（Passthrough）给后端服务处理。
+#    passthrough: false

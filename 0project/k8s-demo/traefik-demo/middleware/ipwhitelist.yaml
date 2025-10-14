@@ -1,0 +1,12 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ip-allowlist
+  namespace: default
+spec:
+  ipAllowList:
+    sourceRange:
+      - 127.0.0.1/32    # 本地环回地址
+      - 10.0.0.0/8      # 一般是集群地址
+      - 10.244.0.0/16   # 一般是集群地址
+      - 192.168.0.0/16  # 局域网地址范围 192.168.0.0 到 192.168.255.255

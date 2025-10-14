@@ -98,8 +98,6 @@ func getDNS() string {
 	if err != nil {
 		log.Fatalf("Failed to resolve %s: %v", serviceName, err)
 	}
-
 	clusterIP := addrs[0]
-
 	return clusterIP
 }

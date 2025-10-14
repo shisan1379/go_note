@@ -1,0 +1,20 @@
+# 配置 TraefikService 实现权重轮询
+apiVersion: traefik.io/v1alpha1
+kind: TraefikService
+metadata:
+  name: wrr
+  namespace: default
+spec:
+  weighted:
+    services:
+      - name: whoami-v1-svc   # 引用第一个服务
+        kind: Service         # 可选默认就是Service
+        weight: 3             # 权重为3
+        port: 80
+      - name: whoami-v2-svc   # 引用第二个服务
+        weight: 1             # 权重为1
+        port: 80
+#    sticky:
+#      cookie:           # 可选：启用会话粘性
+#        name: STICKYSESSION
+#        secure: true

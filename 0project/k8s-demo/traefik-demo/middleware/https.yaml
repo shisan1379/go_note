@@ -1,0 +1,38 @@
+# 定义 Traefik 中间件，使用 traefik.io/v1alpha1 API 版本
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: secure-headers  # 中间件名称，用于路由引用
+  namespace: default    # 命名空间，需与引用它的路由在同一命名空间
+
+spec:
+  headers:  # 配置 HTTP 头相关的安全策略
+    # 启用 X-Frame-Options: DENY 头
+    # 作用：阻止页面被嵌入到 iframe/frame 中，防御点击劫持攻击
+    frameDeny: true
+
+    # 启用 HTTP 到 HTTPS 的自动重定向
+    # 作用：强制所有请求使用加密通道传输，防止明文数据泄露
+    sslRedirect: true
+
+    # 启用 X-XSS-Protection: 1; mode=block 头
+    # 作用：激活浏览器内置的 XSS 过滤器，检测到攻击时直接阻止页面加载
+    browserXssFilter: true
+
+    # 启用 X-Content-Type-Options: nosniff 头
+    # 作用：禁止浏览器自动推断文件类型（MIME 嗅探），防止恶意文件伪装
+    contentTypeNosniff: true
+
+    # HSTS 相关配置（HTTP 严格传输安全）
+    # 作用：强制浏览器后续仅使用 HTTPS 访问，防止降级攻击
+
+    # 让 HSTS 策略应用到所有子域名
+    stsIncludeSubdomains: true
+
+    # 允许将域名加入浏览器的 HSTS 预加载列表
+    # 注：需主动提交到浏览器厂商的预加载列表才会生效
+    stsPreload: true
+
+    # 设置 HSTS 策略的有效期（单位：秒）
+    # 31536000 秒 = 365 天，表示一年内浏览器都会遵循此策略
+    stsSeconds: 31536000

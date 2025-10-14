@@ -1,0 +1,17 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-traefik
+  namespace: default
+spec:
+  gatewayClassName: traefik
+
+  # Only Routes from the same namespace are allowed.
+  listeners:
+    - name: tcp
+      protocol: TCP
+      port: 8888
+      allowedRoutes:
+        namespaces:
+          from: Same

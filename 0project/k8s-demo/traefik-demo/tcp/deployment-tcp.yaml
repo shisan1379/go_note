@@ -1,29 +1,27 @@
-# TCP
 
-kind: Deployment
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: whoamitcp
   namespace: default
-  labels:
-    app: traefiklabs
-    name: whoamitcp
 spec:
   selector:
     matchLabels:
-      app: traefiklabs
-      name: whoamitcp
+      app: whoamitcp
+
   template:
     metadata:
       labels:
-        app: traefiklabs
-        name: whoamitcp
+        app: whoamitcp
     spec:
       containers:
-        - name: whoamitcp
+        - name: whoami
           image: traefik/whoamitcp
+          args:
+            - --port=:3000
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
+
 ---
 apiVersion: v1
 kind: Service
@@ -31,9 +29,7 @@ metadata:
   name: whoamitcp
   namespace: default
 spec:
-  ports:
-    - port: 8080
-      protocol: TCP
   selector:
-    app: traefiklabs
-    name: whoamitcp
+    app: whoamitcp
+  ports:
+    - port: 3000
