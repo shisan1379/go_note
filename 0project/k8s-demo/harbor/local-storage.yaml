@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner  # 本地存储无自动供应者，需手动创建 PV 关联
+reclaimPolicy: Retain  # 保留数据，避免误删
+#volumeBindingMode: WaitForFirstConsumer  # 等待 Pod 调度后再绑定

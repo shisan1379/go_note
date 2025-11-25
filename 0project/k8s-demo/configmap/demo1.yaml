@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mixed-config
+data:
+  # 单个值
+  LOG_LEVEL: "err"
+  # 文件内容
+  app.conf: |
+    timeout=30s
+    max_connections=1000
