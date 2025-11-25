@@ -22,6 +22,7 @@ func main() {
 			w.Write([]byte(fmt.Sprintf("error:%v", duration.Seconds())))
 		} else {
 			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("ok"))
 		}
 	})

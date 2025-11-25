@@ -14,7 +14,7 @@ spec:
     - name: regcred
   containers:
     - name: liveness
-      image: liveness:latest
+      image: shisan.com/a:v1.0
       # 镜像拉取策略
       imagePullPolicy: IfNotPresent  # 如果镜像已经存在于节点上，则不尝试从远程仓库拉取
       # 每隔3秒向容器探测，是否正常
